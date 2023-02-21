@@ -24,6 +24,20 @@ services:
 
     # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
+  postgis:
+    image: postgis/postgis:latest
+    restart: unless-stopped
+    network_mode: service:app
+    volumes:
+      - postgis-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgis
+      POSTGRES_DB: postgis
+      POSTGRES_PASSWORD: postgis
+
+    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+      
   mongodb:
     image: 'bitnami/mongodb:latest'
     environment:
@@ -35,11 +49,14 @@ services:
     network_mode: service:app
     volumes:
       - mongodb-data:/mongodb
+ 
   redis:
     image: 'redis/redis-stack-server:latest'
     network_mode: service:app
     volumes:
       - redis-data:/redis
+
 volumes:
   mongodb-data:
   redis-data:
+  postgis-data:
