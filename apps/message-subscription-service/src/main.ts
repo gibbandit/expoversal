@@ -1,4 +1,4 @@
-import koa from 'koa';
+/* import koa from 'koa';
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -12,3 +12,4 @@ app.use(async (ctx) => {
 app.listen(port, host, () => {
   console.log(`[ ready ] http://${host}:${port}`);
 });
+ */

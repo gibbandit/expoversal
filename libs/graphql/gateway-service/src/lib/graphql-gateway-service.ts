@@ -1,10 +1,11 @@
-import { delegateToSchema } from '@graphql-tools/delegate';
 import { stitchSchemas } from '@graphql-tools/stitch';
 import { buildHTTPExecutor } from '@graphql-tools/executor-http';
-import { OperationTypeNode } from 'graphql';
-
 import { schema as userSchema } from '@expoversal/graphql-user-service';
+import { stitchingDirectives } from '@graphql-tools/stitching-directives';
 import { schema as messageSchema } from '@expoversal/graphql-message-service';
+import { GraphQLSchema } from 'graphql';
+
+const { stitchingDirectivesTransformer } = stitchingDirectives();
 
 const userRemoteExecutor = buildHTTPExecutor({
   endpoint: 'http://localhost:3001/graphql',
@@ -24,48 +25,20 @@ export const messageSubschema = {
   executor: messageRemoteExecutor,
 };
 
-export const schema = stitchSchemas({
-  subschemas: [userSubschema, messageSubschema],
-  typeDefs: /* GraphQL */ `
-    extend type Message {
-      createdUser: User!
-    }
-    extend type Thread {
-      createdUser: User!
-    }
-  `,
-  resolvers: {
-    Message: {
-      createdUser: {
-        selectionSet: `{ createdUserId }`,
-        resolve(message, _args, context, info) {
-          return delegateToSchema({
-            schema: userSchema,
-            operation: OperationTypeNode.QUERY,
-            fieldName: 'user',
-            args: { id: message.createdUserId },
-            context,
-            info,
-          });
-        },
-      },
-    },
-    Thread: {
-      createdUser: {
-        selectionSet: `{ createdUserId }`,
-        resolve(thread, _args, context, info) {
-          return delegateToSchema({
-            schema: userSchema,
-            operation: OperationTypeNode.QUERY,
-            fieldName: 'user',
-            args: { id: thread.createdUserId },
-            context,
-            info,
-          });
-        },
-      },
-    },
-  },
-});
+export const schema = sanatizeSchema(
+  stitchSchemas({
+    subschemas: [userSubschema, messageSubschema],
+    subschemaConfigTransforms: [stitchingDirectivesTransformer],
+  })
+);
+
+function sanatizeSchema(schema: GraphQLSchema): GraphQLSchema {
+  const queryType = schema.getQueryType();
+  if (queryType) {
+    const fields = queryType.getFields();
+    delete fields._sdl;
+  }
+  return schema;
+}
 
 export default schema;
