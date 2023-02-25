@@ -5,23 +5,27 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nrwl/webpack:webpack",
+      "executor": "@nrwl/esbuild:esbuild",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "target": "node",
-        "compiler": "tsc",
         "outputPath": "dist/apps/message-subscription-service",
+        "format": ["cjs"],
         "main": "apps/message-subscription-service/src/main.ts",
         "tsConfig": "apps/message-subscription-service/tsconfig.app.json",
         "assets": ["apps/message-subscription-service/src/assets"],
-        "isolatedConfig": true,
-        "webpackConfig": "apps/message-subscription-service/webpack.config.js"
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
       },
       "configurations": {
         "production": {
-          "optimization": true,
-          "extractLicenses": true,
-          "inspect": false
+          "generateLockfile": true,
+          "esbuildOptions": {
+            "sourcemap": false
+          }
         }
       }
     },
@@ -55,6 +59,15 @@
           "ci": true,
           "codeCoverage": true
         }
+      }
+    },
+    "docker-build": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "docker build -f apps/message-subscription-service/Dockerfile . -t message-subscription-service"
+        ]
       }
     }
   },

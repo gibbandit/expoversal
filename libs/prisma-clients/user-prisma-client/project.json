@@ -1,0 +1,64 @@
+{
+    "targets": {
+        "prisma-generate": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    {
+                        "command": "npx prisma generate --schema=./libs/prisma-clients/user-prisma-client/prisma/schema.prisma"
+                    }
+                ]
+            }
+        },
+        "prisma-deploy": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    {
+                        "command": "npx prisma deploy --schema=./libs/prisma-clients/user-prisma-client/prisma/schema.prisma"
+                    }
+                ]
+            }
+        },
+        "prisma-migrate": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    {
+                        "command": "npx prisma migrate dev --schema=./libs/prisma-clients/user-prisma-client/prisma/schema.prisma"
+                    }
+                ]
+            }
+        },
+        "prisma-pull": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    {
+                        "command": "npx prisma db pull --schema=./libs/prisma-clients/user-prisma-client/prisma/schema.prisma"
+                    }
+                ]
+            }
+        },
+        "prisma-push": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    {
+                        "command": "npx prisma db push --schema=./libs/prisma-clients/user-prisma-client/prisma/schema.prisma"
+                    }
+                ]
+            }
+        },
+        "prisma-studio": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    {
+                        "command": "npx prisma studio --schema=./libs/prisma-clients/user-prisma-client/prisma/schema.prisma"
+                    }
+                ]
+            }
+        }
+    }
+}

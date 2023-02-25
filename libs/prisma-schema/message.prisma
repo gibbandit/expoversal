@@ -1,0 +1,15 @@
+model Message {
+    id            String   @id @default(uuid())
+    createdUserId String
+    createdAt     DateTime @default(now())
+    content       String
+    thread        Thread   @relation(fields: [threadId], references: [id])
+    threadId      String
+}
+
+model Thread {
+    id            String    @id @default(uuid())
+    createdUserId String
+    createdAt     DateTime  @default(now())
+    messages      Message[]
+}

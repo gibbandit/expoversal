@@ -1,22 +1,25 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
+import koa from 'koa';
+import { createYoga } from 'graphql-yoga';
 
-import { Logger } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { schema } from '@expoversal/graphql-gateway-service';
 
-import { AppModule } from './app/app.module';
+const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const globalPrefix = 'api';
-  app.setGlobalPrefix(globalPrefix);
-  const port = process.env.PORT || 3333;
-  await app.listen(port);
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
+const app = new koa();
+
+const yoga = createYoga<koa.ParameterizedContext>({ schema });
+
+app.use(async (ctx) => {
+  const response = await yoga.handleNodeRequest(ctx.req, ctx);
+  ctx.status = response.status;
+  response.headers.forEach((value, key) => {
+    ctx.append(key, value);
+  });
+  ctx.body = response.body;
+});
+
+app.listen(port, () => {
+  console.log(
+    `🚀 graphql api gateway endpoint running at http://localhost:${port}`
   );
-}
-
-bootstrap();
+});

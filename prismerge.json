@@ -1,0 +1,18 @@
+{
+  "message-client": {
+    "inputs": [
+      "./libs/prisma-schema/message.base.prisma",
+      "./libs/prisma-schema/message.prisma"
+    ],
+    "fragments": {},
+    "output": "./libs/prisma-clients/message-prisma-client/prisma/schema.prisma"
+  },
+  "user-client": {
+    "inputs": [
+      "./libs/prisma-schema/user.base.prisma",
+      "./libs/prisma-schema/user.prisma"
+    ],
+    "fragments": {},
+    "output": "./libs/prisma-clients/user-prisma-client/prisma/schema.prisma"
+  }
+}
