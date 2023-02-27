@@ -10,36 +10,28 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": [
-      "es2017",
-      "dom"
-    ],
+    "lib": ["es2017", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@expoversal/graphql-gateway-service": [
+        "libs/graphql/gateway-service/src/index.ts"
+      ],
       "@expoversal/graphql-message-service": [
         "libs/graphql/message-service/src/index.ts"
+      ],
+      "@expoversal/graphql-message-subscription-service": [
+        "libs/graphql/message-subscription-service/src/index.ts"
       ],
       "@expoversal/graphql-user-service": [
         "libs/graphql/user-service/src/index.ts"
       ],
-      "@expoversal/pothos-types": [
-        "libs/graphql/pothos/index.ts"
-      ],
-      "@expoversal/prisma-clients": [
-        "libs/prisma-clients/index.ts"
-      ],
-      "@expoversal/prisma-clients/*": [
-        "libs/prisma-clients/*"
-      ],
-      "@expoversal/graphql-gateway-service": [
-        "libs/graphql/gateway-service/src/index.ts"
-      ]
+      "@expoversal/kafka-pub-sub": ["libs/kafka-pub-sub/src/index.ts"],
+      "@expoversal/pothos-types": ["libs/graphql/pothos/index.ts"],
+      "@expoversal/prisma-clients": ["libs/prisma-clients/index.ts"],
+      "@expoversal/prisma-clients/*": ["libs/prisma-clients/*"]
     }
   },
-  "exclude": [
-    "node_modules",
-    "tmp"
-  ]
+  "exclude": ["node_modules", "tmp"]
 }

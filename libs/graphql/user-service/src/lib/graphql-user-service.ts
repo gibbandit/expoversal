@@ -22,20 +22,20 @@ const builder = new SchemaBuilder<{
     merge: {
       locations: 'FIELD_DEFINITION';
       args: {
-        keyField?: String;
-        keyArg?: String;
-        additionalArgs?: String;
-        key?: [String];
-        argsExpr?: String;
+        keyField?: string;
+        keyArg?: string;
+        additionalArgs?: string;
+        key?: [string];
+        argsExpr?: string;
       };
     };
     key: {
       locations: 'OBJECT';
-      args: { selectionSet: String };
+      args: { selectionSet?: string };
     };
     computed: {
       locations: 'FIELD_DEFINITION';
-      args: { selectionSet: String };
+      args: { selectionSet?: string };
     };
     canonical: {
       locations:
@@ -72,39 +72,50 @@ builder.prismaObject('User', {
 builder.queryType({
   fields: (t) => ({
     users: t.prismaField({
+      type: ['User'],
       directives: {
         merge: { keyField: 'id' },
       },
-      type: ['User'],
       args: {
         ids: t.arg.stringList({ required: true }),
       },
-      resolve: async (query, _root, _args, _ctx, _info) => {
+      resolve: async (query, _root, args, _ctx, _info) => {
         return prisma.user.findMany({
           ...query,
-          where: { id: { in: _args.ids } },
-        });
-      },
-    }),
-    user: t.prismaField({
-      directives: {
-        merge: { keyField: 'id' },
-      },
-      type: 'User',
-      args: {
-        id: t.arg.string({ required: true }),
-      },
-      resolve: async (query, _root, args, _ctx, _info) => {
-        return prisma.user.findUniqueOrThrow({
-          ...query,
           where: {
-            id: args.id,
+            id: {
+              in: args.ids,
+            },
           },
         });
       },
     }),
     _sdl: t.string({
       resolve: () => sdl,
+    }),
+  }),
+});
+
+const userInput = builder.inputType('userInput', {
+  fields: (t) => ({
+    username: t.string({ required: true }),
+  }),
+});
+
+builder.mutationType({
+  fields: (t) => ({
+    userCreate: t.prismaField({
+      type: 'User',
+      args: {
+        input: t.arg({ type: userInput, required: true }),
+      },
+      resolve: async (_query, _root, args, _ctx, _info) => {
+        return prisma.user.create({
+          data: {
+            username: args.input.username,
+          },
+        });
+      },
     }),
   }),
 });

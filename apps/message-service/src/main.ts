@@ -7,7 +7,18 @@ const port = process.env.PORT ? Number(process.env.PORT) : 3002;
 
 const app = new koa();
 
-const yoga = createYoga<koa.ParameterizedContext>({ schema });
+async function getCurrentUser(authorization: string | undefined) {
+  return authorization ? { id: authorization } : undefined;
+}
+
+const yoga = createYoga<koa.ParameterizedContext>({
+  schema,
+  context: async ({ request }) => ({
+    currentUser: await getCurrentUser(
+      request.headers.get('authorization') || undefined
+    ),
+  }),
+});
 
 app.use(async (ctx) => {
   const response = await yoga.handleNodeRequest(ctx.req, ctx);

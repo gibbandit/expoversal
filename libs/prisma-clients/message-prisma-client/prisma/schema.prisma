@@ -40,5 +40,6 @@ model Thread {
   id            String    @id @default(uuid())
   createdUserId String
   createdAt     DateTime  @default(now())
+  name          String
   messages      Message[]
 }
