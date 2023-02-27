@@ -1,15 +1,17 @@
 {
   "name": "chat-client",
-  "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "./chat-client/src",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "./apps/chat-client/src",
   "projectType": "application",
   "targets": {
     "build": {
       "executor": "@nrwl/vite:build",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "dist/chat-client"
+        "outputPath": "dist/apps/chat-client"
       },
       "configurations": {
         "development": {
@@ -54,17 +56,23 @@
     },
     "test": {
       "executor": "@nrwl/vite:test",
-      "outputs": ["coverage/chat-client"],
+      "outputs": [
+        "coverage/apps/chat-client"
+      ],
       "options": {
         "passWithNoTests": true,
-        "reportsDirectory": "../coverage/chat-client"
+        "reportsDirectory": "../../coverage/apps/chat-client"
       }
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
+      "outputs": [
+        "{options.outputFile}"
+      ],
       "options": {
-        "lintFilePatterns": ["./chat-client/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": [
+          "apps/chat-client/**/*.{ts,tsx,js,jsx}"
+        ]
       }
     }
   },
