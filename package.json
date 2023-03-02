@@ -16,6 +16,7 @@
     "@pothos/core": "^3.27.0",
     "@pothos/plugin-directives": "^3.10.0",
     "@pothos/plugin-prisma": "^3.41.1",
+    "@pothos/plugin-relay": "^3.37.0",
     "@prisma/client": "^4.5.0",
     "@swc/helpers": "~0.4.11",
     "axios": "^1.0.0",
@@ -45,9 +46,9 @@
     "@nrwl/js": "15.7.2",
     "@nrwl/linter": "15.7.2",
     "@nrwl/node": "15.7.2",
-    "@nrwl/react": "15.7.2",
+    "@nrwl/react": "15.8.2",
     "@nrwl/vite": "15.7.2",
-    "@nrwl/webpack": "15.7.2",
+    "@nrwl/webpack": "15.8.2",
     "@nrwl/workspace": "15.7.2",
     "@prisma-utils/prismerge": "^1.7.0",
     "@swc/cli": "~0.1.55",
@@ -80,7 +81,7 @@
     "jsdom": "~20.0.3",
     "koa": "2.14.1",
     "nx": "15.7.2",
-    "postcss": "8.4.19",
+    "postcss": "8.4.21",
     "prettier": "^2.6.2",
     "prisma": "^4.5.0",
     "react-test-renderer": "18.2.0",
@@ -96,3 +97,4 @@
     "vitest": "^0.25.8"
   }
 }
+
