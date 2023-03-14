@@ -1,0 +1,61 @@
+type Query {
+  node(id: ID!): Node
+  nodes(ids: [ID!]!): [Node]!
+  users(ids: [String!]!): [User!]!
+  messages(ids: [String!]!): [Message!]!
+  threads(ids: [String!]): [Thread!]!
+}
+
+type Mutation {
+  userCreate(input: userInput!): User!
+  messageCreate(input: messageInput!): Message!
+  threadCreate(input: threadInput!): Thread!
+}
+
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
+interface Node {
+  id: ID!
+}
+
+type User implements Node {
+  id: ID!
+  createdAt: DateTime
+  username: String
+}
+
+input userInput {
+  username: String!
+}
+
+type Message implements Node {
+  content: String
+  createdAt: DateTime
+  createdUser: User
+  id: ID!
+  thread: Thread
+}
+
+type Thread implements Node {
+  id: ID!
+  createdAt: DateTime
+  createdUser: User
+  messages: [Message!]
+  name: String
+}
+
+input messageInput {
+  content: String!
+  threadId: ID!
+}
+
+input threadInput {
+  name: String!
+}
+
+type Subscription {
+  threadMessageUpdates(threadId: ID!): Message!
+}

@@ -2,6 +2,10 @@ import SchemaBuilder from '@pothos/core';
 import DirectivePlugin from '@pothos/plugin-directives';
 import { MessagePrismaClient } from '@expoversal/prisma-clients/message-prisma-client';
 import PrismaPlugin from '@pothos/plugin-prisma';
+import RelayPlugin, {
+  decodeGlobalID,
+  encodeGlobalID,
+} from '@pothos/plugin-relay';
 import { DateTimeResolver } from 'graphql-scalars';
 import { stitchingDirectives } from '@graphql-tools/stitching-directives';
 import { lexicographicSortSchema } from 'graphql';
@@ -10,7 +14,8 @@ import { pubsub } from '@expoversal/kafka-pub-sub';
 
 import type { MessagePothosTypes } from '@expoversal/pothos-types';
 
-const { stitchingDirectivesValidator } = stitchingDirectives();
+const { stitchingDirectivesValidator, allStitchingDirectives } =
+  stitchingDirectives();
 
 const prisma = new MessagePrismaClient({});
 
@@ -52,11 +57,15 @@ const builder = new SchemaBuilder<{
     };
   };
 }>({
-  plugins: [PrismaPlugin, DirectivePlugin],
+  plugins: [PrismaPlugin, DirectivePlugin, RelayPlugin],
   prisma: {
     client: prisma,
     exposeDescriptions: true,
     filterConnectionTotalCount: true,
+  },
+  relayOptions: {
+    clientMutationId: 'omit',
+    cursorType: 'String',
   },
   useGraphQLToolsUnorderedDirectives: true,
 });
@@ -65,43 +74,57 @@ builder.addScalarType('DateTime', DateTimeResolver, {});
 
 const User = builder.objectRef<{ id: string }>('User');
 
-builder.objectType(User, {
-  fields: (t) => ({
-    id: t.exposeID('id'),
-  }),
+builder.node(User, {
+  id: {
+    resolve: (user) => user.id,
+  },
 });
 
-builder.prismaObject('Message', {
+builder.prismaNode('Message', {
+  id: { field: 'id' },
+  directives: {
+    key: {
+      selectionSet: '{ id }',
+    },
+    canonical: {},
+  },
   fields: (t) => ({
-    id: t.exposeID('id'),
     createdUser: t.field({
       type: User,
+      nullable: true,
       resolve: async (parent, _args, _ctx, _info) => {
         return {
           id: parent.createdUserId,
         };
       },
     }),
-    createdAt: t.expose('createdAt', { type: 'DateTime' }),
-    content: t.exposeString('content'),
-    thread: t.relation('thread'),
+    createdAt: t.expose('createdAt', { type: 'DateTime', nullable: true }),
+    content: t.exposeString('content', { nullable: true }),
+    thread: t.relation('thread', { nullable: true }),
   }),
 });
 
-builder.prismaObject('Thread', {
+builder.prismaNode('Thread', {
+  id: { field: 'id' },
+  directives: {
+    key: {
+      selectionSet: '{ id }',
+    },
+    canonical: {},
+  },
   fields: (t) => ({
-    id: t.exposeID('id'),
     createdUser: t.field({
       type: User,
+      nullable: true,
       resolve: async (parent, _args, _ctx, _info) => {
         return {
           id: parent.createdUserId,
         };
       },
     }),
-    createdAt: t.expose('createdAt', { type: 'DateTime' }),
-    name: t.exposeString('name'),
-    messages: t.relation('messages'),
+    createdAt: t.expose('createdAt', { type: 'DateTime', nullable: true }),
+    name: t.exposeString('name', { nullable: true }),
+    messages: t.relation('messages', { nullable: true }),
   }),
 });
 
@@ -110,38 +133,48 @@ builder.queryType({
     threads: t.prismaField({
       type: ['Thread'],
       directives: {
-        merge: { keyField: 'id' },
+        merge: {},
+        canonical: {},
       },
       args: {
         ids: t.arg.stringList({ required: false }),
       },
       resolve: async (query, _root, args, _ctx, _info) => {
-        return args.ids
-          ? prisma.thread.findMany({
-              ...query,
-              orderBy: {
-                createdAt: 'desc',
+        if (args.ids) {
+          const dbIds = args.ids.map((id) => {
+            return decodeGlobalID(id).id;
+          });
+          return prisma.thread.findMany({
+            ...query,
+            orderBy: {
+              createdAt: 'desc',
+            },
+            where: {
+              id: {
+                in: dbIds,
               },
-              where: {
-                id: {
-                  in: args.ids,
-                },
-              },
-            })
-          : prisma.thread.findMany({
-              ...query,
-            });
+            },
+          });
+        } else {
+          return prisma.thread.findMany({
+            ...query,
+          });
+        }
       },
     }),
     messages: t.prismaField({
       type: ['Message'],
       directives: {
-        merge: { keyField: 'id' },
+        merge: {},
+        canonical: {},
       },
       args: {
         ids: t.arg.stringList({ required: true }),
       },
       resolve: async (query, _root, args, _ctx, _info) => {
+        const dbIds = args.ids.map((id) => {
+          return decodeGlobalID(id).id;
+        });
         return prisma.message.findMany({
           ...query,
           orderBy: {
@@ -149,7 +182,7 @@ builder.queryType({
           },
           where: {
             id: {
-              in: args.ids,
+              in: dbIds,
             },
           },
         });
@@ -214,6 +247,8 @@ builder.mutationType({
     }),
   }),
 });
-export const schema = stitchingDirectivesValidator(builder.toSchema({}));
+export const schema = stitchingDirectivesValidator(
+  builder.toSchema({ directives: allStitchingDirectives })
+);
 
-const sdl = printSchemaWithDirectives(lexicographicSortSchema(schema));
+export const sdl = printSchemaWithDirectives(lexicographicSortSchema(schema));

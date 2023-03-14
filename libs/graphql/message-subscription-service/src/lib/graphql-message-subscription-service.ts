@@ -12,19 +12,23 @@ export const schema = makeExecutableSchema({
       _sdl: String!
     }
 
-    type Message {
-      id: ID!
-      createdAt: DateTime!
-      content: String!
-      createdUser: User!
-      thread: Thread!
-    }
-
-    type User {
+    interface Node {
       id: ID!
     }
 
-    type Thread {
+    type Message implements Node {
+      id: ID!
+      createdAt: DateTime
+      content: String
+      createdUser: User
+      thread: Thread
+    }
+
+    type User implements Node {
+      id: ID!
+    }
+
+    type Thread implements Node {
       id: ID!
     }
 
@@ -64,4 +68,4 @@ export const schema = makeExecutableSchema({
   },
 });
 
-const sdl = printSchema(lexicographicSortSchema(schema));
+export const sdl = printSchema(lexicographicSortSchema(schema));

@@ -20,6 +20,7 @@
 		"ghcr.io/devcontainers/features/rust:1": {},
 		"ghcr.io/devcontainers-contrib/features/nx-npm:1": {},
 		"ghcr.io/devcontainers-contrib/features/prisma:2": {},
+		"ghcr.io/gibbandit/features/mongodb-tools:latest": {},
 		"ghcr.io/dhoeric/features/k6:1": {},
 		"devwasm.azurecr.io/dev-wasm/dev-wasm-feature/rust-wasi:0": {}
 	},
@@ -35,9 +36,9 @@
 				"dbaeumer.vscode-eslint",
 				"Prisma.prisma",
 				"k6.k6",
-				"apollographql.vscode-apollo",
-				"ApolloGraphQL.apollo-workbench",
-				"bradlc.vscode-tailwindcss"
+				"bradlc.vscode-tailwindcss",
+				"GraphQL.vscode-graphql",
+				"GraphQL.vscode-graphql-syntax"
 			]
 		}
 	},

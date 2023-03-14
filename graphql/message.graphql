@@ -1,0 +1,53 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+"A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar."
+scalar DateTime
+
+type Message implements Node @canonical {
+  content: String!
+  createdAt: DateTime!
+  createdUser: User!
+  id: ID!
+  thread: Thread!
+}
+
+type Mutation {
+  messageCreate(input: messageInput!): Message!
+  threadCreate(input: threadInput!): Thread!
+}
+
+interface Node {
+  id: ID!
+}
+
+type Query {
+  _sdl: String!
+  messages(ids: [String!]!): [Message!]! @merge(keyField: "id")
+  node(id: ID!): Node
+  nodes(ids: [ID!]!): [Node]!
+  threads(ids: [String!]): [Thread!]! @merge(keyField: "id")
+}
+
+type Thread implements Node @canonical {
+  createdAt: DateTime!
+  createdUser: User!
+  id: ID!
+  messages: [Message!]!
+  name: String!
+}
+
+type User implements Node {
+  id: ID!
+}
+
+input messageInput {
+  content: String!
+  threadId: ID!
+}
+
+input threadInput {
+  name: String!
+}

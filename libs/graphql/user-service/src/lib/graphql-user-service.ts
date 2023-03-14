@@ -2,14 +2,16 @@ import SchemaBuilder from '@pothos/core';
 import DirectivePlugin from '@pothos/plugin-directives';
 import { UserPrismaClient } from '@expoversal/prisma-clients/user-prisma-client';
 import PrismaPlugin from '@pothos/plugin-prisma';
+import RelayPlugin, { decodeGlobalID } from '@pothos/plugin-relay';
 import { DateTimeResolver } from 'graphql-scalars';
 import { stitchingDirectives } from '@graphql-tools/stitching-directives';
-import { lexicographicSortSchema } from 'graphql';
+import { GraphQLDirective, lexicographicSortSchema } from 'graphql';
 import { printSchemaWithDirectives } from '@graphql-tools/utils';
 
 import type { UserPothosTypes } from '@expoversal/pothos-types';
 
-const { stitchingDirectivesValidator } = stitchingDirectives();
+const { stitchingDirectivesValidator, allStitchingDirectives } =
+  stitchingDirectives();
 
 const prisma = new UserPrismaClient({});
 
@@ -50,22 +52,32 @@ const builder = new SchemaBuilder<{
     };
   };
 }>({
-  plugins: [PrismaPlugin, DirectivePlugin],
+  plugins: [PrismaPlugin, DirectivePlugin, RelayPlugin],
   prisma: {
     client: prisma,
     exposeDescriptions: true,
     filterConnectionTotalCount: true,
+  },
+  relayOptions: {
+    clientMutationId: 'omit',
+    cursorType: 'String',
   },
   useGraphQLToolsUnorderedDirectives: true,
 });
 
 builder.addScalarType('DateTime', DateTimeResolver, {});
 
-builder.prismaObject('User', {
+builder.prismaNode('User', {
+  id: { field: 'id' },
+  directives: {
+    key: {
+      selectionSet: '{ id }',
+    },
+    canonical: {},
+  },
   fields: (t) => ({
-    id: t.exposeID('id'),
-    createdAt: t.expose('createdAt', { type: 'DateTime' }),
-    username: t.exposeString('username'),
+    createdAt: t.expose('createdAt', { type: 'DateTime', nullable: true }),
+    username: t.exposeString('username', { nullable: true }),
   }),
 });
 
@@ -75,16 +87,20 @@ builder.queryType({
       type: ['User'],
       directives: {
         merge: { keyField: 'id' },
+        canonical: {},
       },
       args: {
         ids: t.arg.stringList({ required: true }),
       },
       resolve: async (query, _root, args, _ctx, _info) => {
+        const dbIds = args.ids.map((id) => {
+          return decodeGlobalID(id).id;
+        });
         return prisma.user.findMany({
           ...query,
           where: {
             id: {
-              in: args.ids,
+              in: dbIds,
             },
           },
         });
@@ -120,6 +136,8 @@ builder.mutationType({
   }),
 });
 
-export const schema = stitchingDirectivesValidator(builder.toSchema({}));
+export const schema = stitchingDirectivesValidator(
+  builder.toSchema({ directives: allStitchingDirectives })
+);
 
-const sdl = printSchemaWithDirectives(lexicographicSortSchema(schema));
+export const sdl = printSchemaWithDirectives(lexicographicSortSchema(schema));
