@@ -10,7 +10,7 @@ import { type Executor, isAsyncIterable } from '@graphql-tools/utils';
 import { handleRelaySubschemas } from './relay';
 const { stitchingDirectivesTransformer } = stitchingDirectives();
 
-import { printSchemaToFile } from '@expoversal/graphql-tools';
+import { printSchemaToFile } from '@expoversal/graphql-utils';
 
 export type SubschemaOptions = {
   serviceName: string;

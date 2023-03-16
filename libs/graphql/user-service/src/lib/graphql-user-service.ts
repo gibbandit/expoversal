@@ -9,7 +9,7 @@ import { GraphQLDirective, lexicographicSortSchema } from 'graphql';
 import { printSchemaWithDirectives } from '@graphql-tools/utils';
 
 import type { UserPothosTypes } from '@expoversal/pothos-types';
-import { printSchemaToFile } from '@expoversal/graphql-tools';
+import { printSchemaToFile } from '@expoversal/graphql-utils';
 
 const { stitchingDirectivesValidator, allStitchingDirectives } =
   stitchingDirectives();

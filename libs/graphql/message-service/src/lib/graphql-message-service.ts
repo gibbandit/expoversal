@@ -13,7 +13,7 @@ import { printSchemaWithDirectives } from '@graphql-tools/utils';
 import { pubsub } from '@expoversal/kafka-pub-sub';
 
 import type { MessagePothosTypes } from '@expoversal/pothos-types';
-import { printSchemaToFile } from '@expoversal/graphql-tools';
+import { printSchemaToFile } from '@expoversal/graphql-utils';
 
 const { stitchingDirectivesValidator, allStitchingDirectives } =
   stitchingDirectives();

@@ -7,7 +7,7 @@ import { KafkaMessage } from 'kafkajs';
 import { stitchingDirectives } from '@graphql-tools/stitching-directives';
 import { printSchemaWithDirectives } from '@graphql-tools/utils';
 
-import { printSchemaToFile } from '@expoversal/graphql-tools';
+import { printSchemaToFile } from '@expoversal/graphql-utils';
 
 const { stitchingDirectivesValidator, allStitchingDirectivesTypeDefs } =
   stitchingDirectives();
