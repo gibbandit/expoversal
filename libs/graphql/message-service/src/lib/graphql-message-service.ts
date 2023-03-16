@@ -13,6 +13,7 @@ import { printSchemaWithDirectives } from '@graphql-tools/utils';
 import { pubsub } from '@expoversal/kafka-pub-sub';
 
 import type { MessagePothosTypes } from '@expoversal/pothos-types';
+import { printSchemaToFile } from '@expoversal/graphql-tools';
 
 const { stitchingDirectivesValidator, allStitchingDirectives } =
   stitchingDirectives();
@@ -83,9 +84,6 @@ builder.node(User, {
 builder.prismaNode('Message', {
   id: { field: 'id' },
   directives: {
-    key: {
-      selectionSet: '{ id }',
-    },
     canonical: {},
   },
   fields: (t) => ({
@@ -107,9 +105,6 @@ builder.prismaNode('Message', {
 builder.prismaNode('Thread', {
   id: { field: 'id' },
   directives: {
-    key: {
-      selectionSet: '{ id }',
-    },
     canonical: {},
   },
   fields: (t) => ({
@@ -133,16 +128,16 @@ builder.queryType({
     threads: t.prismaField({
       type: ['Thread'],
       directives: {
-        merge: {},
+        merge: { keyField: 'id' },
         canonical: {},
       },
       args: {
-        ids: t.arg.stringList({ required: false }),
+        ids: t.arg.idList({ required: false }),
       },
       resolve: async (query, _root, args, _ctx, _info) => {
         if (args.ids) {
           const dbIds = args.ids.map((id) => {
-            return decodeGlobalID(id).id;
+            return decodeGlobalID(id.toString()).id;
           });
           return prisma.thread.findMany({
             ...query,
@@ -165,15 +160,15 @@ builder.queryType({
     messages: t.prismaField({
       type: ['Message'],
       directives: {
-        merge: {},
+        merge: { keyField: 'id' },
         canonical: {},
       },
       args: {
-        ids: t.arg.stringList({ required: true }),
+        ids: t.arg.idList({ required: true }),
       },
       resolve: async (query, _root, args, _ctx, _info) => {
         const dbIds = args.ids.map((id) => {
-          return decodeGlobalID(id).id;
+          return decodeGlobalID(id.toString()).id;
         });
         return prisma.message.findMany({
           ...query,
@@ -252,3 +247,5 @@ export const schema = stitchingDirectivesValidator(
 );
 
 export const sdl = printSchemaWithDirectives(lexicographicSortSchema(schema));
+
+printSchemaToFile(sdl, 'message');

@@ -9,6 +9,7 @@ import { GraphQLDirective, lexicographicSortSchema } from 'graphql';
 import { printSchemaWithDirectives } from '@graphql-tools/utils';
 
 import type { UserPothosTypes } from '@expoversal/pothos-types';
+import { printSchemaToFile } from '@expoversal/graphql-tools';
 
 const { stitchingDirectivesValidator, allStitchingDirectives } =
   stitchingDirectives();
@@ -70,9 +71,6 @@ builder.addScalarType('DateTime', DateTimeResolver, {});
 builder.prismaNode('User', {
   id: { field: 'id' },
   directives: {
-    key: {
-      selectionSet: '{ id }',
-    },
     canonical: {},
   },
   fields: (t) => ({
@@ -90,11 +88,11 @@ builder.queryType({
         canonical: {},
       },
       args: {
-        ids: t.arg.stringList({ required: true }),
+        ids: t.arg.idList({ required: true }),
       },
       resolve: async (query, _root, args, _ctx, _info) => {
         const dbIds = args.ids.map((id) => {
-          return decodeGlobalID(id).id;
+          return decodeGlobalID(id.toString()).id;
         });
         return prisma.user.findMany({
           ...query,
@@ -141,3 +139,5 @@ export const schema = stitchingDirectivesValidator(
 );
 
 export const sdl = printSchemaWithDirectives(lexicographicSortSchema(schema));
+
+printSchemaToFile(sdl, 'user');

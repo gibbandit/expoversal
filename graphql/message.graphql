@@ -3,15 +3,23 @@ schema {
   mutation: Mutation
 }
 
+directive @canonical on ENUM | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
+
+directive @computed(selectionSet: String!) on FIELD_DEFINITION
+
+directive @key(selectionSet: String!) on OBJECT
+
+directive @merge(additionalArgs: String, argsExpr: String, key: [String!], keyArg: String, keyField: String) on FIELD_DEFINITION
+
 "A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar."
 scalar DateTime
 
 type Message implements Node @canonical {
-  content: String!
-  createdAt: DateTime!
-  createdUser: User!
+  content: String
+  createdAt: DateTime
+  createdUser: User
   id: ID!
-  thread: Thread!
+  thread: Thread
 }
 
 type Mutation {
@@ -25,18 +33,18 @@ interface Node {
 
 type Query {
   _sdl: String!
-  messages(ids: [String!]!): [Message!]! @merge(keyField: "id")
+  messages(ids: [ID!]!): [Message!]! @merge(keyField: "id") @canonical
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
-  threads(ids: [String!]): [Thread!]! @merge(keyField: "id")
+  threads(ids: [ID!]): [Thread!]! @merge(keyField: "id") @canonical
 }
 
 type Thread implements Node @canonical {
-  createdAt: DateTime!
-  createdUser: User!
+  createdAt: DateTime
+  createdUser: User
   id: ID!
-  messages: [Message!]!
-  name: String!
+  messages: [Message!]
+  name: String
 }
 
 type User implements Node {

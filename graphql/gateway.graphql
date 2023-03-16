@@ -1,9 +1,9 @@
 type Query {
   node(id: ID!): Node
-  nodes(ids: [ID!]!): [Node]!
-  users(ids: [String!]!): [User!]!
-  messages(ids: [String!]!): [Message!]!
-  threads(ids: [String!]): [Thread!]!
+  nodes(ids: [ID!]!): [Node!]
+  users(ids: [ID!]!): [User!]!
+  messages(ids: [ID!]!): [Message!]!
+  threads(ids: [ID!]): [Thread!]!
 }
 
 type Mutation {

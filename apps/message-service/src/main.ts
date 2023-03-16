@@ -18,6 +18,7 @@ const yoga = createYoga<koa.ParameterizedContext>({
       request.headers.get('authorization') || undefined
     ),
   }),
+  logging: 'debug',
 });
 
 app.use(async (ctx) => {

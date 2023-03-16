@@ -7,7 +7,10 @@ const port = process.env.PORT ? Number(process.env.PORT) : 3001;
 
 const app = new koa();
 
-const yoga = createYoga<koa.ParameterizedContext>({ schema });
+const yoga = createYoga<koa.ParameterizedContext>({
+  schema: schema,
+  logging: 'debug',
+});
 
 app.use(async (ctx) => {
   const response = await yoga.handleNodeRequest(ctx.req, ctx);
