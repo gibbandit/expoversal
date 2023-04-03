@@ -1,31 +1,14 @@
-schema {
-  query: Query
-  subscription: Subscription
-}
-
-directive @canonical on ENUM | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
-
-directive @computed(selectionSet: String!) on FIELD_DEFINITION
-
-directive @key(selectionSet: String!) on OBJECT
-
-directive @merge(additionalArgs: String, argsExpr: String, key: [String!], keyArg: String, keyField: String) on FIELD_DEFINITION
-
 """
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
 scalar DateTime
 
-type Message implements Node {
+type Message {
   content: String
   createdAt: DateTime
   createdUser: User
   id: ID!
   thread: Thread
-}
-
-interface Node {
-  id: ID!
 }
 
 type Query {
@@ -36,10 +19,10 @@ type Subscription {
   threadMessageUpdates(threadId: ID!): Message!
 }
 
-type Thread implements Node {
+type Thread {
   id: ID!
 }
 
-type User implements Node {
+type User {
   id: ID!
 }

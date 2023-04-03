@@ -1,20 +1,9 @@
-schema {
-  query: Query
-  mutation: Mutation
-}
-
-directive @canonical on ENUM | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
-
-directive @computed(selectionSet: String!) on FIELD_DEFINITION
-
-directive @key(selectionSet: String!) on OBJECT
-
-directive @merge(additionalArgs: String, argsExpr: String, key: [String!], keyArg: String, keyField: String) on FIELD_DEFINITION
-
-"A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar."
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
 scalar DateTime
 
-type Message implements Node @canonical {
+type Message implements Node {
   content: String
   createdAt: DateTime
   createdUser: User
@@ -31,23 +20,49 @@ interface Node {
   id: ID!
 }
 
-type Query {
-  _sdl: String!
-  messages(ids: [ID!]!): [Message!]! @merge(keyField: "id") @canonical
-  node(id: ID!): Node
-  nodes(ids: [ID!]!): [Node]!
-  threads(ids: [ID!]): [Thread!]! @merge(keyField: "id") @canonical
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
 }
 
-type Thread implements Node @canonical {
+type Query {
+  _sdl: String!
+  node(id: ID!): Node
+  nodes(ids: [ID!]!): [Node]!
+  threads(after: String, before: String, first: Int, last: Int): QueryThreadsConnection!
+}
+
+type QueryThreadsConnection {
+  edges: [QueryThreadsConnectionEdge]!
+  pageInfo: PageInfo!
+}
+
+type QueryThreadsConnectionEdge {
+  cursor: String!
+  node: Thread!
+}
+
+type Thread implements Node {
   createdAt: DateTime
   createdUser: User
   id: ID!
-  messages: [Message!]
+  messages(after: String, before: String, first: Int, last: Int): ThreadMessagesConnection
   name: String
 }
 
-type User implements Node {
+type ThreadMessagesConnection {
+  edges: [ThreadMessagesConnectionEdge]!
+  pageInfo: PageInfo!
+}
+
+type ThreadMessagesConnectionEdge {
+  cursor: String!
+  node: Message!
+}
+
+type User {
   id: ID!
 }
 

@@ -1,22 +1,15 @@
 import SchemaBuilder from '@pothos/core';
-import DirectivePlugin from '@pothos/plugin-directives';
+
 import { MessagePrismaClient } from '@expoversal/prisma-clients/message-prisma-client';
 import PrismaPlugin from '@pothos/plugin-prisma';
-import RelayPlugin, {
-  decodeGlobalID,
-  encodeGlobalID,
-} from '@pothos/plugin-relay';
+import RelayPlugin, { encodeGlobalID } from '@pothos/plugin-relay';
 import { DateTimeResolver } from 'graphql-scalars';
-import { stitchingDirectives } from '@graphql-tools/stitching-directives';
-import { lexicographicSortSchema } from 'graphql';
-import { printSchemaWithDirectives } from '@graphql-tools/utils';
+import { lexicographicSortSchema, printSchema } from 'graphql';
+
 import { pubsub } from '@expoversal/kafka-pub-sub';
 
 import type { MessagePothosTypes } from '@expoversal/pothos-types';
 import { printSchemaToFile } from '@expoversal/graphql-utils';
-
-const { stitchingDirectivesValidator, allStitchingDirectives } =
-  stitchingDirectives();
 
 const prisma = new MessagePrismaClient({});
 
@@ -26,39 +19,8 @@ const builder = new SchemaBuilder<{
   Scalars: {
     DateTime: { Input: Date; Output: Date };
   };
-  Directives: {
-    merge: {
-      locations: 'FIELD_DEFINITION';
-      args: {
-        keyField?: string;
-        keyArg?: string;
-        additionalArgs?: string;
-        key?: [string];
-        argsExpr?: string;
-      };
-    };
-    key: {
-      locations: 'OBJECT';
-      args: { selectionSet?: string };
-    };
-    computed: {
-      locations: 'FIELD_DEFINITION';
-      args: { selectionSet?: string };
-    };
-    canonical: {
-      locations:
-        | 'OBJECT'
-        | 'INTERFACE'
-        | 'INPUT_OBJECT'
-        | 'UNION'
-        | 'ENUM'
-        | 'SCALAR'
-        | 'FIELD_DEFINITION'
-        | 'INPUT_FIELD_DEFINITION';
-    };
-  };
 }>({
-  plugins: [PrismaPlugin, DirectivePlugin, RelayPlugin],
+  plugins: [PrismaPlugin, RelayPlugin],
   prisma: {
     client: prisma,
     exposeDescriptions: true,
@@ -68,31 +30,27 @@ const builder = new SchemaBuilder<{
     clientMutationId: 'omit',
     cursorType: 'String',
   },
-  useGraphQLToolsUnorderedDirectives: true,
 });
 
 builder.addScalarType('DateTime', DateTimeResolver, {});
 
 const User = builder.objectRef<{ id: string }>('User');
 
-builder.node(User, {
-  id: {
-    resolve: (user) => user.id,
-  },
+builder.objectType(User, {
+  fields: (t) => ({
+    id: t.exposeID('id'),
+  }),
 });
 
 builder.prismaNode('Message', {
   id: { field: 'id' },
-  directives: {
-    canonical: {},
-  },
   fields: (t) => ({
     createdUser: t.field({
       type: User,
       nullable: true,
       resolve: async (parent, _args, _ctx, _info) => {
         return {
-          id: parent.createdUserId,
+          id: encodeGlobalID('User', parent.createdUserId),
         };
       },
     }),
@@ -104,81 +62,40 @@ builder.prismaNode('Message', {
 
 builder.prismaNode('Thread', {
   id: { field: 'id' },
-  directives: {
-    canonical: {},
-  },
   fields: (t) => ({
     createdUser: t.field({
       type: User,
       nullable: true,
       resolve: async (parent, _args, _ctx, _info) => {
         return {
-          id: parent.createdUserId,
+          id: encodeGlobalID('User', parent.createdUserId),
         };
       },
     }),
     createdAt: t.expose('createdAt', { type: 'DateTime', nullable: true }),
     name: t.exposeString('name', { nullable: true }),
-    messages: t.relation('messages', { nullable: true }),
+    messages: t.relatedConnection('messages', {
+      cursor: 'id',
+      nullable: true,
+      query: () => ({
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+    }),
   }),
 });
 
 builder.queryType({
   fields: (t) => ({
-    threads: t.prismaField({
-      type: ['Thread'],
-      directives: {
-        merge: { keyField: 'id' },
-        canonical: {},
-      },
-      args: {
-        ids: t.arg.idList({ required: false }),
-      },
-      resolve: async (query, _root, args, _ctx, _info) => {
-        if (args.ids) {
-          const dbIds = args.ids.map((id) => {
-            return decodeGlobalID(id.toString()).id;
-          });
-          return prisma.thread.findMany({
-            ...query,
-            orderBy: {
-              createdAt: 'desc',
-            },
-            where: {
-              id: {
-                in: dbIds,
-              },
-            },
-          });
-        } else {
-          return prisma.thread.findMany({
-            ...query,
-          });
-        }
-      },
-    }),
-    messages: t.prismaField({
-      type: ['Message'],
-      directives: {
-        merge: { keyField: 'id' },
-        canonical: {},
-      },
-      args: {
-        ids: t.arg.idList({ required: true }),
-      },
-      resolve: async (query, _root, args, _ctx, _info) => {
-        const dbIds = args.ids.map((id) => {
-          return decodeGlobalID(id.toString()).id;
-        });
-        return prisma.message.findMany({
+    threads: t.prismaConnection({
+      type: 'Thread',
+      cursor: 'id',
+      resolve: async (query) => {
+        return prisma.thread.findMany({
           ...query,
           orderBy: {
             createdAt: 'desc',
-          },
-          where: {
-            id: {
-              in: dbIds,
-            },
           },
         });
       },
@@ -209,7 +126,7 @@ builder.mutationType({
       args: {
         input: t.arg({ type: threadInput, required: true }),
       },
-      resolve: async (query, _root, args, ctx, _info) => {
+      resolve: async (query, _root, args, ctx) => {
         return prisma.thread.create({
           ...query,
           data: { createdUserId: ctx.currentUser.id, name: args.input.name },
@@ -221,7 +138,7 @@ builder.mutationType({
       args: {
         input: t.arg({ type: messageInput, required: true }),
       },
-      resolve: async (query, _root, args, ctx, _info) => {
+      resolve: async (query, _root, args, ctx) => {
         return prisma.message
           .create({
             ...query,
@@ -242,10 +159,8 @@ builder.mutationType({
     }),
   }),
 });
-export const schema = stitchingDirectivesValidator(
-  builder.toSchema({ directives: allStitchingDirectives })
-);
+export const schema = builder.toSchema({});
 
-export const sdl = printSchemaWithDirectives(lexicographicSortSchema(schema));
+export const sdl = printSchema(lexicographicSortSchema(schema));
 
 printSchemaToFile(sdl, 'message');

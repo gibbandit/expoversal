@@ -1,9 +1,8 @@
 type Query {
+  me: User
   node(id: ID!): Node
-  nodes(ids: [ID!]!): [Node!]
-  users(ids: [ID!]!): [User!]!
-  messages(ids: [ID!]!): [Message!]!
-  threads(ids: [ID!]): [Thread!]!
+  nodes(ids: [ID!]!): [Node]!
+  threads(after: String, before: String, first: Int, last: Int): QueryThreadsConnection!
 }
 
 type Mutation {
@@ -22,8 +21,8 @@ interface Node {
 }
 
 type User implements Node {
-  id: ID!
   createdAt: DateTime
+  id: ID!
   username: String
 }
 
@@ -39,12 +38,39 @@ type Message implements Node {
   thread: Thread
 }
 
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+type QueryThreadsConnection {
+  edges: [QueryThreadsConnectionEdge]!
+  pageInfo: PageInfo!
+}
+
+type QueryThreadsConnectionEdge {
+  cursor: String!
+  node: Thread!
+}
+
 type Thread implements Node {
-  id: ID!
   createdAt: DateTime
   createdUser: User
-  messages: [Message!]
+  id: ID!
+  messages(after: String, before: String, first: Int, last: Int): ThreadMessagesConnection
   name: String
+}
+
+type ThreadMessagesConnection {
+  edges: [ThreadMessagesConnectionEdge]!
+  pageInfo: PageInfo!
+}
+
+type ThreadMessagesConnectionEdge {
+  cursor: String!
+  node: Message!
 }
 
 input messageInput {

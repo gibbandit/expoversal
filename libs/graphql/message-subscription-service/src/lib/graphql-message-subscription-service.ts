@@ -1,31 +1,21 @@
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { DateTimeTypeDefinition, DateTimeResolver } from 'graphql-scalars';
-import { lexicographicSortSchema, printSchema, subscribe } from 'graphql';
+import { lexicographicSortSchema, printSchema } from 'graphql';
 
 import { pubsub } from '@expoversal/kafka-pub-sub';
 import { KafkaMessage } from 'kafkajs';
-import { stitchingDirectives } from '@graphql-tools/stitching-directives';
-import { printSchemaWithDirectives } from '@graphql-tools/utils';
 
 import { printSchemaToFile } from '@expoversal/graphql-utils';
 
-const { stitchingDirectivesValidator, allStitchingDirectivesTypeDefs } =
-  stitchingDirectives();
-
 export const schema = makeExecutableSchema({
   typeDefs: /* GraphQL */ `
-    ${allStitchingDirectivesTypeDefs}
     ${DateTimeTypeDefinition}
 
     type Query {
       _sdl: String!
     }
 
-    interface Node {
-      id: ID!
-    }
-
-    type Message implements Node {
+    type Message {
       id: ID!
       createdAt: DateTime
       content: String
@@ -33,11 +23,11 @@ export const schema = makeExecutableSchema({
       thread: Thread
     }
 
-    type User implements Node {
+    type User {
       id: ID!
     }
 
-    type Thread implements Node {
+    type Thread {
       id: ID!
     }
 
@@ -77,6 +67,6 @@ export const schema = makeExecutableSchema({
   },
 });
 
-export const sdl = printSchemaWithDirectives(lexicographicSortSchema(schema));
+export const sdl = printSchema(lexicographicSortSchema(schema));
 
 printSchemaToFile(sdl, 'subscription');

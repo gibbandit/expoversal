@@ -1,14 +1,15 @@
 import { stitchSchemas } from '@graphql-tools/stitch';
 import { buildHTTPExecutor } from '@graphql-tools/executor-http';
-import { stitchingDirectives } from '@graphql-tools/stitching-directives';
-import { filterSchema, pruneSchema } from '@graphql-tools/utils';
-import { buildSchema, GraphQLSchema, printSchema } from 'graphql';
+import {
+  type Executor,
+  isAsyncIterable,
+  filterSchema,
+  pruneSchema,
+} from '@graphql-tools/utils';
+import { buildSchema, GraphQLSchema, printSchema, parse } from 'graphql';
 import { decodeGlobalID } from '@pothos/plugin-relay';
 import { SubschemaConfig } from '@graphql-tools/delegate';
-import { parse } from 'graphql';
-import { type Executor, isAsyncIterable } from '@graphql-tools/utils';
 import { handleRelaySubschemas } from './relay';
-const { stitchingDirectivesTransformer } = stitchingDirectives();
 
 import { printSchemaToFile } from '@expoversal/graphql-utils';
 
@@ -79,7 +80,7 @@ export async function createGatewaySchema(
     subschemas: handleRelaySubschemas(subschemas, (id) => {
       return decodeGlobalID(id).typename;
     }),
-    subschemaConfigTransforms: [stitchingDirectivesTransformer],
+    mergeTypes: true,
   });
   printSchemaToFile(printSchema(schema), 'gateway');
   return schema;
