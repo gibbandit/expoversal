@@ -2,22 +2,17 @@ import koa from 'koa';
 import { createYoga } from 'graphql-yoga';
 
 import { schema } from '@expoversal/graphql-user-service';
+import { parseAuthHeader } from '@expoversal/graphql-utils';
 
 const port = process.env.PORT ? Number(process.env.PORT) : 3001;
 
 const app = new koa();
 
-async function getCurrentUser(authorization: string | undefined) {
-  return authorization ? { id: authorization } : undefined;
-}
-
 const yoga = createYoga<koa.ParameterizedContext>({
+  schema,
   context: async ({ request }) => ({
-    currentUser: await getCurrentUser(
-      request.headers.get('authorization') || undefined
-    ),
+    currentUser: await parseAuthHeader(request.headers.get('authorization')),
   }),
-  schema: schema,
   logging: 'debug',
 });
 

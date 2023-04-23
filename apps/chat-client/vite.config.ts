@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite';
+import relay from 'vite-plugin-relay';
 import react from '@vitejs/plugin-react';
 import viteTsConfigPaths from 'vite-tsconfig-paths';
 
@@ -17,6 +18,7 @@ export default defineConfig({
   },
 
   plugins: [
+    relay,
     react(),
     viteTsConfigPaths({
       root: '../../',

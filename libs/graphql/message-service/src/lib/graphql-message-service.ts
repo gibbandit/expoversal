@@ -2,7 +2,7 @@ import SchemaBuilder from '@pothos/core';
 
 import { MessagePrismaClient } from '@expoversal/prisma-clients/message-prisma-client';
 import PrismaPlugin from '@pothos/plugin-prisma';
-import RelayPlugin, { encodeGlobalID } from '@pothos/plugin-relay';
+import RelayPlugin, { decodeGlobalID, encodeGlobalID } from '@pothos/plugin-relay';
 import { DateTimeResolver } from 'graphql-scalars';
 import { lexicographicSortSchema, printSchema } from 'graphql';
 
@@ -143,7 +143,7 @@ builder.mutationType({
           .create({
             ...query,
             data: {
-              threadId: String(args.input.threadId),
+              threadId: decodeGlobalID(String(args.input.threadId)).id,
               createdUserId: ctx.currentUser.id,
               content: args.input.content,
             },

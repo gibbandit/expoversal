@@ -4,12 +4,17 @@
   "sourceRoot": "./apps/chat-client/src",
   "projectType": "application",
   "targets": {
+    "relay": {
+      "executor": "nx:run-script",
+      "options": {
+        "script": "relay ./apps/chat-client/relay.config.json"
+      }
+    },
     "build": {
       "executor": "@nrwl/vite:build",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
+      "dependsOn": ["relay"],
       "options": {
         "outputPath": "dist/apps/chat-client"
       },
@@ -25,6 +30,7 @@
     "serve": {
       "executor": "@nrwl/vite:dev-server",
       "defaultConfiguration": "development",
+      "dependsOn": ["relay"],
       "options": {
         "buildTarget": "chat-client:build"
       },
@@ -42,6 +48,7 @@
     "preview": {
       "executor": "@nrwl/vite:preview-server",
       "defaultConfiguration": "development",
+      "dependsOn": ["relay"],
       "options": {
         "buildTarget": "chat-client:build"
       },
@@ -56,9 +63,8 @@
     },
     "test": {
       "executor": "@nrwl/vite:test",
-      "outputs": [
-        "coverage/apps/chat-client"
-      ],
+      "outputs": ["coverage/apps/chat-client"],
+      "dependsOn": ["relay"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/apps/chat-client"
@@ -66,13 +72,9 @@
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
+      "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "apps/chat-client/**/*.{ts,tsx,js,jsx}"
-        ]
+        "lintFilePatterns": ["apps/chat-client/**/*.{ts,tsx,js,jsx}"]
       }
     }
   },
