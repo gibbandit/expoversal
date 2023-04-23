@@ -1,6 +1,8 @@
 import koa from 'koa';
 import { createYoga } from 'graphql-yoga';
 
+import { pubsub } from '@expoversal/redis-pub-sub';
+
 import { schema } from '@expoversal/graphql-message-service';
 import { parseAuthHeader } from '@expoversal/graphql-utils';
 
@@ -12,6 +14,7 @@ const yoga = createYoga<koa.ParameterizedContext>({
   schema,
   context: async ({ request }) => ({
     currentUser: await parseAuthHeader(request.headers.get('authorization')),
+    pubsub,
   }),
   logging: 'debug',
 });

@@ -14,6 +14,7 @@ async function FetchGraphQL(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      authorization: 'VXNlcjozYTMxYmExNS03NDM5LTRjNWUtYWEyOS1jNjc5ODY2MDQ2YjY=',
     },
     body: JSON.stringify({
       query,

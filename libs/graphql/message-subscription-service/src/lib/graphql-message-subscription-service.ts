@@ -2,10 +2,8 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { DateTimeTypeDefinition, DateTimeResolver } from 'graphql-scalars';
 import { lexicographicSortSchema, printSchema } from 'graphql';
 
-import { pubsub } from '@expoversal/kafka-pub-sub';
-import { KafkaMessage } from 'kafkajs';
-
 import { printSchemaToFile } from '@expoversal/graphql-utils';
+import { decodeGlobalID } from '@pothos/plugin-relay';
 
 export const schema = makeExecutableSchema({
   typeDefs: /* GraphQL */ `
@@ -42,26 +40,21 @@ export const schema = makeExecutableSchema({
     },
     Subscription: {
       threadMessageUpdates: {
-        resolve: (payload: KafkaMessage) => {
-          const message = JSON.parse(payload.value?.toString() || '');
+        resolve: (payload) => {
           return {
-            id: message.id,
-            createdAt: message.createdAt,
-            content: message.content,
+            id: payload.id,
+            createdAt: payload.createdAt,
+            content: payload.content,
             createdUser: {
-              id: message.createdUserId,
+              id: payload.createdUserId,
             },
             thread: {
-              id: message.threadId,
+              id: payload.threadId,
             },
           };
         },
-        subscribe: async (_, args) => {
-          const res = (await pubsub).asyncIterator<any>(
-            `message-thread-${args.threadId}`
-          );
-          return res;
-        },
+        subscribe: async (_, args, ctx) =>
+          ctx.pubsub.subscribe(`message-thread-${args.threadId}`),
       },
     },
   },

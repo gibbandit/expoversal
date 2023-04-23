@@ -2,19 +2,21 @@ import SchemaBuilder from '@pothos/core';
 
 import { MessagePrismaClient } from '@expoversal/prisma-clients/message-prisma-client';
 import PrismaPlugin from '@pothos/plugin-prisma';
-import RelayPlugin, { decodeGlobalID, encodeGlobalID } from '@pothos/plugin-relay';
+import RelayPlugin, {
+  decodeGlobalID,
+  encodeGlobalID,
+} from '@pothos/plugin-relay';
 import { DateTimeResolver } from 'graphql-scalars';
 import { lexicographicSortSchema, printSchema } from 'graphql';
 
-import { pubsub } from '@expoversal/kafka-pub-sub';
-
 import type { MessagePothosTypes } from '@expoversal/pothos-types';
 import { printSchemaToFile } from '@expoversal/graphql-utils';
+import { PubSub } from 'graphql-yoga';
 
 const prisma = new MessagePrismaClient({});
 
 const builder = new SchemaBuilder<{
-  Context: { currentUser: { id: string } };
+  Context: { currentUser: { id: string }; pubsub: PubSub<any> };
   PrismaTypes: MessagePothosTypes;
   Scalars: {
     DateTime: { Input: Date; Output: Date };
@@ -149,10 +151,13 @@ builder.mutationType({
             },
           })
           .then(async (message) => {
-            (await pubsub).publish(
-              `message-thread-${message.threadId}`,
-              Buffer.from(JSON.stringify(message))
+            message.id = encodeGlobalID('Message', message.id);
+            message.createdUserId = encodeGlobalID(
+              'User',
+              message.createdUserId
             );
+            message.threadId = encodeGlobalID('Thread', message.threadId);
+            ctx.pubsub.publish(`message-thread-${message.threadId}`, message);
             return message;
           });
       },
