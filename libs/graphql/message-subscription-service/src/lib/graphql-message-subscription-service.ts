@@ -5,19 +5,22 @@ import { lexicographicSortSchema, printSchema } from 'graphql';
 import { pubsub } from '@expoversal/kafka-pub-sub';
 import { KafkaMessage } from 'kafkajs';
 
+import { printSchemaToFile } from '@expoversal/graphql-utils';
+
 export const schema = makeExecutableSchema({
   typeDefs: /* GraphQL */ `
     ${DateTimeTypeDefinition}
+
     type Query {
       _sdl: String!
     }
 
     type Message {
       id: ID!
-      createdAt: DateTime!
-      content: String!
-      createdUser: User!
-      thread: Thread!
+      createdAt: DateTime
+      content: String
+      createdUser: User
+      thread: Thread
     }
 
     type User {
@@ -64,4 +67,6 @@ export const schema = makeExecutableSchema({
   },
 });
 
-const sdl = printSchema(lexicographicSortSchema(schema));
+export const sdl = printSchema(lexicographicSortSchema(schema));
+
+printSchemaToFile(sdl, 'subscription');

@@ -2,13 +2,20 @@
   "name": "expoversal",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "relay": "relay-compiler"
+  },
+  "relay": {
+    "eagerEsModules": true
+  },
   "private": true,
   "dependencies": {
     "@graphql-tools/delegate": "^9.0.28",
     "@graphql-tools/executor-http": "^0.1.9",
+    "@graphql-tools/load": "^7.8.13",
     "@graphql-tools/stitch": "^8.7.42",
     "@graphql-tools/stitching-directives": "^2.3.31",
+    "@graphql-tools/url-loader": "^7.17.14",
     "@graphql-tools/wrap": "^9.3.7",
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
@@ -28,6 +35,7 @@
     "kafkajs": "^2.2.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-relay": "^15.0.0",
     "react-router-dom": "6.4.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.0.0",
@@ -60,6 +68,7 @@
     "@types/node": "18.11.9",
     "@types/react": "18.0.25",
     "@types/react-dom": "18.0.9",
+    "@types/react-relay": "^14.1.3",
     "@types/react-router-dom": "5.3.3",
     "@typescript-eslint/eslint-plugin": "^5.36.1",
     "@typescript-eslint/parser": "^5.36.1",
@@ -67,6 +76,7 @@
     "@vitest/coverage-c8": "~0.25.8",
     "@vitest/ui": "^0.25.8",
     "autoprefixer": "10.4.13",
+    "babel-plugin-relay": "^14.1.0",
     "cypress": "^12.2.0",
     "esbuild": "^0.17.5",
     "eslint": "~8.15.0",
@@ -85,6 +95,7 @@
     "prettier": "^2.6.2",
     "prisma": "^4.5.0",
     "react-test-renderer": "18.2.0",
+    "relay-compiler": "^15.0.0",
     "swc-loader": "0.1.15",
     "tailwindcss": "3.2.4",
     "ts-jest": "28.0.5",
@@ -93,8 +104,8 @@
     "vite": "^4.0.1",
     "vite-plugin-dts": "~1.7.1",
     "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-relay": "^2.0.0",
     "vite-tsconfig-paths": "^4.0.2",
     "vitest": "^0.25.8"
   }
 }
-

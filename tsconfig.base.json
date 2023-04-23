@@ -30,6 +30,7 @@
       "@expoversal/graphql-user-service": [
         "libs/graphql/user-service/src/index.ts"
       ],
+      "@expoversal/graphql-utils": ["libs/graphql/utils/index.ts"],
       "@expoversal/kafka-pub-sub": ["libs/kafka-pub-sub/src/index.ts"],
       "@expoversal/pothos-types": ["libs/graphql/pothos/index.ts"],
       "@expoversal/prisma-clients": ["libs/prisma-clients/index.ts"],

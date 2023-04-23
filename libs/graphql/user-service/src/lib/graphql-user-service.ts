@@ -1,91 +1,54 @@
 import SchemaBuilder from '@pothos/core';
-import DirectivePlugin from '@pothos/plugin-directives';
 import { UserPrismaClient } from '@expoversal/prisma-clients/user-prisma-client';
 import PrismaPlugin from '@pothos/plugin-prisma';
+import RelayPlugin from '@pothos/plugin-relay';
 import { DateTimeResolver } from 'graphql-scalars';
-import { stitchingDirectives } from '@graphql-tools/stitching-directives';
-import { lexicographicSortSchema } from 'graphql';
-import { printSchemaWithDirectives } from '@graphql-tools/utils';
+
+import { lexicographicSortSchema, printSchema } from 'graphql';
 
 import type { UserPothosTypes } from '@expoversal/pothos-types';
-
-const { stitchingDirectivesValidator } = stitchingDirectives();
+import { printSchemaToFile } from '@expoversal/graphql-utils';
 
 const prisma = new UserPrismaClient({});
 
 const builder = new SchemaBuilder<{
+  Context: { currentUser: { id: string } };
   PrismaTypes: UserPothosTypes;
   Scalars: {
     DateTime: { Input: Date; Output: Date };
   };
-  Directives: {
-    merge: {
-      locations: 'FIELD_DEFINITION';
-      args: {
-        keyField?: string;
-        keyArg?: string;
-        additionalArgs?: string;
-        key?: [string];
-        argsExpr?: string;
-      };
-    };
-    key: {
-      locations: 'OBJECT';
-      args: { selectionSet?: string };
-    };
-    computed: {
-      locations: 'FIELD_DEFINITION';
-      args: { selectionSet?: string };
-    };
-    canonical: {
-      locations:
-        | 'OBJECT'
-        | 'INTERFACE'
-        | 'INPUT_OBJECT'
-        | 'UNION'
-        | 'ENUM'
-        | 'SCALAR'
-        | 'FIELD_DEFINITION'
-        | 'INPUT_FIELD_DEFINITION';
-    };
-  };
 }>({
-  plugins: [PrismaPlugin, DirectivePlugin],
+  plugins: [PrismaPlugin, RelayPlugin],
   prisma: {
     client: prisma,
     exposeDescriptions: true,
     filterConnectionTotalCount: true,
   },
-  useGraphQLToolsUnorderedDirectives: true,
+  relayOptions: {
+    clientMutationId: 'omit',
+    cursorType: 'String',
+  },
 });
 
 builder.addScalarType('DateTime', DateTimeResolver, {});
 
-builder.prismaObject('User', {
+builder.prismaNode('User', {
+  id: { field: 'id' },
   fields: (t) => ({
-    id: t.exposeID('id'),
-    createdAt: t.expose('createdAt', { type: 'DateTime' }),
-    username: t.exposeString('username'),
+    createdAt: t.expose('createdAt', { type: 'DateTime', nullable: true }),
+    username: t.exposeString('username', { nullable: true }),
   }),
 });
 
 builder.queryType({
   fields: (t) => ({
-    users: t.prismaField({
-      type: ['User'],
-      directives: {
-        merge: { keyField: 'id' },
-      },
-      args: {
-        ids: t.arg.stringList({ required: true }),
-      },
-      resolve: async (query, _root, args, _ctx, _info) => {
-        return prisma.user.findMany({
-          ...query,
+    me: t.prismaField({
+      type: 'User',
+      nullable: true,
+      resolve: async (_query, _root, _args, ctx) => {
+        return prisma.user.findFirst({
           where: {
-            id: {
-              in: args.ids,
-            },
+            id: ctx.currentUser.id,
           },
         });
       },
@@ -120,6 +83,8 @@ builder.mutationType({
   }),
 });
 
-export const schema = stitchingDirectivesValidator(builder.toSchema({}));
+export const schema = builder.toSchema({});
 
-const sdl = printSchemaWithDirectives(lexicographicSortSchema(schema));
+export const sdl = printSchema(lexicographicSortSchema(schema));
+
+printSchemaToFile(sdl, 'user');

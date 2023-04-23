@@ -1,0 +1,24 @@
+schema {
+  query: Query
+}
+
+type Message implements Node {
+  id: ID!
+}
+
+interface Node {
+  id: ID!
+}
+
+type Query {
+  node(id: ID!): Node
+  nodes(ids: [ID!]!): [Node]!
+}
+
+type Thread implements Node {
+  id: ID!
+}
+
+type User implements Node {
+  id: ID!
+}
