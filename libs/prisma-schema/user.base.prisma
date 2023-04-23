@@ -15,6 +15,6 @@ generator pothos {
 }
 
 datasource db {
-    provider = "mongodb"
+    provider = "postgresql"
     url      = env("USER_PRISMA_SOURCE_URL")
 }

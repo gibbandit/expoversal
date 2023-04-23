@@ -33,47 +33,11 @@ services:
       POSTGRES_USER: postgis
       POSTGRES_DB: postgis
       POSTGRES_PASSWORD: postgis
-   
-  mongodb:
-    image: 'bitnami/mongodb:latest'
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
-      - MONGODB_REPLICA_SET_MODE=primary
-      - MONGODB_ROOT_USER=root
-      - MONGODB_ROOT_PASSWORD=prisma
-      - MONGODB_REPLICA_SET_KEY=replicasetkey
-    network_mode: service:app
-    volumes:
-      - mongodb-data:/bitnami/mongodb
- 
   redis:
     image: 'redis/redis-stack-server:latest'
     network_mode: service:app
     volumes:
       - redis-data:/redis
-
-  kafka:
-    command:
-      - redpanda
-      - start
-      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
-      - --advertise-kafka-addr internal://localhost:9092,external://localhost:19092
-      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
-      - --advertise-pandaproxy-addr internal://localhost:8082,external://localhost:18082
-      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
-      - --rpc-addr localhost:33145
-      - --advertise-rpc-addr localhost:33145
-      - --smp 1
-      - --memory 1G
-      - --mode dev-container
-      - --default-log-level=debug
-    image: redpandadata/redpanda
-    network_mode: service:app
-    volumes:
-      - kafka-data:/var/lib/redpanda/data
-
 volumes:
-  mongodb-data:
   redis-data:
   postgis-data:
-  kafka-data:

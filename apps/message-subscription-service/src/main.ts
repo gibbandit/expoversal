@@ -1,6 +1,8 @@
 import koa from 'koa';
 import { createYoga } from 'graphql-yoga';
 
+import { pubsub } from '@expoversal/redis-pub-sub';
+
 import { schema } from '@expoversal/graphql-message-subscription-service';
 
 const port = process.env.PORT ? Number(process.env.PORT) : 3003;
@@ -17,6 +19,7 @@ const yoga = createYoga<koa.ParameterizedContext>({
     currentUser: await getCurrentUser(
       request.headers.get('authorization') || undefined
     ),
+    pubsub,
   }),
 });
 
