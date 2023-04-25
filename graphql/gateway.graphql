@@ -2,7 +2,12 @@ type Query {
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
   viewer: User
-  threads(after: String, before: String, first: Int, last: Int): QueryThreadsConnection!
+  threads(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): QueryThreadsConnection!
 }
 
 type Mutation {
@@ -60,7 +65,12 @@ type Thread implements Node {
   createdAt: DateTime
   createdUser: User
   id: ID!
-  messages(after: String, before: String, first: Int, last: Int): ThreadMessagesConnection
+  messages(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): ThreadMessagesConnection
   name: String
 }
 
