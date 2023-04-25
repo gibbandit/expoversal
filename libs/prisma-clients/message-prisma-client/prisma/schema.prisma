@@ -1,0 +1,39 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../../../../node_modules/.prisma/message-prisma-client"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+generator zod {
+  provider = "zod-prisma-types"
+  output   = "../../../../node_modules/.prisma/message-prisma-zod"
+}
+
+generator pothos {
+  provider     = "prisma-pothos-types"
+  clientOutput = "./message-prisma-client"
+  output       = "../../../../node_modules/.prisma/message-prisma-pothos.ts"
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("MESSAGE_PRISMA_SOURCE_URL")
+  extensions = [postgis, pgcrypto]
+}
+
+model Message {
+  id            String   @id @default(uuid())
+  createdUserId String
+  createdAt     DateTime @default(now())
+  content       String
+  thread        Thread   @relation(fields: [threadId], references: [id])
+  threadId      String
+}
+
+model Thread {
+  id            String    @id @default(uuid())
+  createdUserId String
+  createdAt     DateTime  @default(now())
+  name          String
+  messages      Message[]
+}
