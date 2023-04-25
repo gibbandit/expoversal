@@ -3,6 +3,7 @@ import { graphql, readInlineData } from 'react-relay';
 import { messageFragment$key } from './__generated__/messageFragment.graphql';
 import ProfileModal from './profileModal';
 import { atom, useRecoilState } from 'recoil';
+import { Avatar } from 'flowbite-react';
 
 type Props = {
   messageRef: any;
@@ -44,10 +45,11 @@ export default function Message({ messageRef }: Props): ReactElement {
         onClose={onCloseModal}
       />
       <div className="flex flex-grow flex-row w-full pt-1 pb-1" id={data?.id}>
-        <img
-          src={data?.createdUser?.avatarUrl}
-          alt="Profile avatar"
+        <Avatar
+          alt="User avatar"
+          img={data.viewer?.avatarUrl}
           className="self-center pl-4 w-16 h-16"
+          rounded={true}
         />
         <div className="self-center flex flex-col">
           <div>

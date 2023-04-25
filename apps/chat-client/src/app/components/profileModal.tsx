@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
 import { graphql, readInlineData } from 'react-relay';
 import { profileModalFragment$key } from './__generated__/profileModalFragment.graphql';
-import { Modal } from 'flowbite-react';
+import { Avatar, Modal } from 'flowbite-react';
 
 type Props = {
   userRef: any;
@@ -34,10 +34,11 @@ export default function ProfileModal({
     >
       <Modal.Body>
         <div className="flex flex-col items-center justify-center">
-          <img
-            src={data?.avatarUrl}
-            alt="Profile avatar"
+          <Avatar
+            alt="User avatar"
+            img={data?.avatarUrl}
             className="mt-8 w-32 h-32"
+            rounded={true}
           />
           <span className="mt-8 mb-8 self-center whitespace-nowrap text-4xl font-normal dark:text-white">
             {data?.username}

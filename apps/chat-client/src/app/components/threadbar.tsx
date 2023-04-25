@@ -31,7 +31,7 @@ export default function Threadbar({ threadsRef }: Props): ReactElement {
       <Sidebar
         collapseBehavior="hide"
         collapsed={false}
-        className="hidden md:block"
+        className="hidden md:block border-r border-gray-200"
       >
         <Sidebar.Items>
           <Sidebar.ItemGroup>

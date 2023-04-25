@@ -3,7 +3,6 @@ import { graphql } from 'react-relay';
 import { profileDropdownQuery$data } from './__generated__/profileDropdownQuery.graphql';
 import { Avatar, Dropdown } from 'flowbite-react';
 import { IoSettingsOutline, IoLogOutOutline } from 'react-icons/io5';
-import { DropdownItem } from 'flowbite-react/lib/esm/components/Dropdown/DropdownItem';
 import ProfileModal from './profileModal';
 import { graphQLSelector } from 'recoil-relay';
 import { recoilEnvironmentKey } from '../../relay';
@@ -57,18 +56,19 @@ export default function ProfileDropdown(): ReactElement {
             show={showModal}
             onClose={onCloseModal}
           />
-          <DropdownItem onClick={onClickProfile}>
+          <Dropdown.Item onClick={onClickProfile}>
             <div className="flex flex-col items-center">
               <Avatar
                 alt="User avatar"
                 img={data.viewer?.avatarUrl}
                 className="mb-2"
+                rounded={true}
               />
               <span className="block truncate text-sm font-medium self-center text-center">
                 {data.viewer?.username}
               </span>
             </div>
-          </DropdownItem>
+          </Dropdown.Item>
         </Dropdown.Header>
         <Dropdown.Item>
           <div className="flex items-center">
