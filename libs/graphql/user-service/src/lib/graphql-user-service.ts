@@ -8,8 +8,11 @@ import { lexicographicSortSchema, printSchema } from 'graphql';
 
 import type { UserPothosTypes } from '@expoversal/pothos-types';
 import { printSchemaToFile } from '@expoversal/graphql-utils';
+import { resolve } from 'path';
 
 const prisma = new UserPrismaClient({});
+
+const avatar_url = process.env.AVATAR_URL ?? 'http://localhost:3004/avatar';
 
 const builder = new SchemaBuilder<{
   Context: { currentUser: { id: string } };
@@ -37,12 +40,17 @@ builder.prismaNode('User', {
   fields: (t) => ({
     createdAt: t.expose('createdAt', { type: 'DateTime', nullable: true }),
     username: t.exposeString('username', { nullable: true }),
+    avatarUrl: t.string({
+      resolve: (root) => {
+        return `${avatar_url}/${root.avatarSeed}.svg`;
+      },
+    }),
   }),
 });
 
 builder.queryType({
   fields: (t) => ({
-    me: t.prismaField({
+    viewer: t.prismaField({
       type: 'User',
       nullable: true,
       resolve: async (_query, _root, _args, ctx) => {

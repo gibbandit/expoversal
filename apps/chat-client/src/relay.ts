@@ -1,3 +1,4 @@
+import { EnvironmentKey } from 'recoil-relay';
 import {
   Environment,
   Network,
@@ -25,7 +26,9 @@ async function FetchGraphQL(
   return await response.json();
 }
 
-export const RelayEnvironment = new Environment({
+export const recoilEnvironmentKey = new EnvironmentKey('RecoilEnvironmentKey');
+
+export const relayEnvironment = new Environment({
   network: Network.create(
     (
       params: any,

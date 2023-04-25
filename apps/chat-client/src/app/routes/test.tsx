@@ -6,7 +6,7 @@ export default function Test(): ReactElement {
   const data = useLazyLoadQuery<testQuery>(
     graphql`
       query testQuery {
-        me {
+        viewer {
           id
           username
         }
@@ -17,9 +17,10 @@ export default function Test(): ReactElement {
 
   return (
     <>
-      <h2 id="user">current user:</h2>
+      <h1>Expoversal</h1>
+      <h2 id="user">current user</h2>
       <ul aria-labelledby="user">
-        {<li key={data.me?.id}>{data.me?.username}</li>}
+        {<li key={data.viewer?.id}>{data.viewer?.username}</li>}
       </ul>
     </>
   );

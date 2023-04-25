@@ -14,7 +14,6 @@
       "executor": "@nrwl/vite:build",
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
-      "dependsOn": ["relay"],
       "options": {
         "outputPath": "dist/apps/chat-client"
       },
@@ -30,7 +29,6 @@
     "serve": {
       "executor": "@nrwl/vite:dev-server",
       "defaultConfiguration": "development",
-      "dependsOn": ["relay"],
       "options": {
         "buildTarget": "chat-client:build"
       },
@@ -48,7 +46,6 @@
     "preview": {
       "executor": "@nrwl/vite:preview-server",
       "defaultConfiguration": "development",
-      "dependsOn": ["relay"],
       "options": {
         "buildTarget": "chat-client:build"
       },
@@ -64,7 +61,6 @@
     "test": {
       "executor": "@nrwl/vite:test",
       "outputs": ["coverage/apps/chat-client"],
-      "dependsOn": ["relay"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/apps/chat-client"

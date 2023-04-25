@@ -15,9 +15,6 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@expoversal/chat-client-components": [
-        "libs/chat-client-components/src/index.ts"
-      ],
       "@expoversal/graphql-gateway-service": [
         "libs/graphql/gateway-service/src/index.ts"
       ],

@@ -1,23 +1,24 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
+import { RecoilRoot } from 'recoil';
+import { RecoilRelayEnvironmentProvider } from 'recoil-relay';
 
-import { RelayEnvironmentProvider } from 'react-relay';
-import { RelayEnvironment } from './relay';
+import { relayEnvironment, recoilEnvironmentKey } from './relay';
 
 import App from './app/app';
-
-/*
-  import components from the library @expoversal/chat-client-components
-  keep this application minimal
-*/
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <StrictMode>
-    <RelayEnvironmentProvider environment={RelayEnvironment}>
-      <App />
-    </RelayEnvironmentProvider>
+    <RecoilRoot>
+      <RecoilRelayEnvironmentProvider
+        environment={relayEnvironment}
+        environmentKey={recoilEnvironmentKey}
+      >
+        <App />
+      </RecoilRelayEnvironmentProvider>
+    </RecoilRoot>
   </StrictMode>
 );

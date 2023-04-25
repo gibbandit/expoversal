@@ -13,12 +13,13 @@ interface Node {
 
 type Query {
   _sdl: String!
-  me: User
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
+  viewer: User
 }
 
 type User implements Node {
+  avatarUrl: String!
   createdAt: DateTime
   id: ID!
   username: String

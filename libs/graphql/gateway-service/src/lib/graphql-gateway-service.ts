@@ -32,7 +32,6 @@ async function fetchRemoteSchema(executor: Executor) {
 class RemovePrivateElementsTransform {
   transformSchema(originalWrappingSchema: GraphQLSchema) {
     const isPublicName = (name?: string) => !name?.startsWith('_');
-
     return pruneSchema(
       filterSchema({
         schema: originalWrappingSchema,
