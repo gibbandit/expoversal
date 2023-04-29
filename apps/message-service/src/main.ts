@@ -13,7 +13,7 @@ const app = new koa();
 const yoga = createYoga<koa.ParameterizedContext>({
   schema,
   context: async ({ request }) => ({
-    currentUser: await parseAuthHeader(request.headers.get('authorization')),
+    User: await parseAuthHeader(request.headers.get('authorization')),
     pubsub,
   }),
   logging: 'debug',

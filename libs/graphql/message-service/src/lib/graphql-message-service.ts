@@ -1,11 +1,14 @@
 import SchemaBuilder from '@pothos/core';
 
-import { MessagePrismaClient } from '@expoversal/prisma-clients/message-prisma-client';
+import { messagePrismaClient as prisma } from '@expoversal/prisma-clients';
+
 import PrismaPlugin from '@pothos/plugin-prisma';
 import RelayPlugin, {
   decodeGlobalID,
   encodeGlobalID,
 } from '@pothos/plugin-relay';
+import ScopeAuthPlugin from '@pothos/plugin-scope-auth';
+
 import { DateTimeResolver } from 'graphql-scalars';
 import { lexicographicSortSchema, printSchema } from 'graphql';
 
@@ -13,16 +16,17 @@ import type { MessagePothosTypes } from '@expoversal/pothos-types';
 import { printSchemaToFile } from '@expoversal/graphql-utils';
 import { PubSub } from 'graphql-yoga';
 
-const prisma = new MessagePrismaClient({});
-
 const builder = new SchemaBuilder<{
-  Context: { currentUser: { id: string }; pubsub: PubSub<any> };
+  Context: { User: { id: string }; pubsub: PubSub<any> };
   PrismaTypes: MessagePothosTypes;
   Scalars: {
     DateTime: { Input: Date; Output: Date };
   };
+  AuthScopes: {
+    private: boolean;
+  };
 }>({
-  plugins: [PrismaPlugin, RelayPlugin],
+  plugins: [PrismaPlugin, RelayPlugin, ScopeAuthPlugin],
   prisma: {
     client: prisma,
     exposeDescriptions: true,
@@ -31,6 +35,12 @@ const builder = new SchemaBuilder<{
   relayOptions: {
     clientMutationId: 'omit',
     cursorType: 'String',
+  },
+  authScopes: async (context) => ({
+    private: !context.User.id,
+  }),
+  scopeAuthOptions: {
+    authorizeOnSubscribe: true,
   },
 });
 
@@ -44,7 +54,10 @@ builder.objectType(User, {
   }),
 });
 
-builder.prismaNode('Message', {
+const messageNode = builder.prismaNode('Message', {
+  authScopes: {
+    private: true,
+  },
   id: { field: 'id' },
   fields: (t) => ({
     createdUser: t.field({
@@ -62,7 +75,10 @@ builder.prismaNode('Message', {
   }),
 });
 
-builder.prismaNode('Thread', {
+const threadNode = builder.prismaNode('Thread', {
+  authScopes: {
+    private: true,
+  },
   id: { field: 'id' },
   fields: (t) => ({
     createdUser: t.field({
@@ -108,62 +124,69 @@ builder.queryType({
   }),
 });
 
-const threadInput = builder.inputType('threadInput', {
-  fields: (t) => ({
-    name: t.string({ required: true }),
-  }),
-});
+builder.mutationType();
 
-const messageInput = builder.inputType('messageInput', {
-  fields: (t) => ({
-    threadId: t.id({ required: true }),
-    content: t.string({ required: true }),
-  }),
-});
+builder.relayMutationField(
+  'threadCreate',
+  {
+    inputFields: (t) => ({
+      name: t.string({ required: true }),
+    }),
+  },
+  {
+    resolve: async (_root, args, ctx) => {
+      return prisma.thread.create({
+        data: { createdUserId: ctx.User.id, name: args.input.name },
+      });
+    },
+  },
+  {
+    outputFields: (t) => ({
+      thread: t.field({
+        type: threadNode,
+        resolve: (result) => result,
+      }),
+    }),
+  }
+);
 
-builder.mutationType({
-  fields: (t) => ({
-    threadCreate: t.prismaField({
-      type: 'Thread',
-      args: {
-        input: t.arg({ type: threadInput, required: true }),
-      },
-      resolve: async (query, _root, args, ctx) => {
-        return prisma.thread.create({
-          ...query,
-          data: { createdUserId: ctx.currentUser.id, name: args.input.name },
+builder.relayMutationField(
+  'messageCreate',
+  {
+    inputFields: (t) => ({
+      threadId: t.id({ required: true }),
+      content: t.string({ required: true }),
+    }),
+  },
+  {
+    resolve: async (_root, args, ctx) => {
+      return prisma.message
+        .create({
+          data: {
+            threadId: decodeGlobalID(String(args.input.threadId)).id,
+            createdUserId: ctx.User.id,
+            content: args.input.content as string,
+          },
+        })
+        .then(async (message) => {
+          message.id = encodeGlobalID('Message', message.id);
+          message.createdUserId = encodeGlobalID('User', message.createdUserId);
+          message.threadId = encodeGlobalID('Thread', message.threadId);
+          ctx.pubsub.publish(`message-thread-${message.threadId}`, message);
+          return message;
         });
-      },
+    },
+  },
+  {
+    outputFields: (t) => ({
+      message: t.field({
+        type: messageNode,
+        resolve: (result) => result,
+      }),
     }),
-    messageCreate: t.prismaField({
-      type: 'Message',
-      args: {
-        input: t.arg({ type: messageInput, required: true }),
-      },
-      resolve: async (query, _root, args, ctx) => {
-        return prisma.message
-          .create({
-            ...query,
-            data: {
-              threadId: decodeGlobalID(String(args.input.threadId)).id,
-              createdUserId: ctx.currentUser.id,
-              content: args.input.content,
-            },
-          })
-          .then(async (message) => {
-            message.id = encodeGlobalID('Message', message.id);
-            message.createdUserId = encodeGlobalID(
-              'User',
-              message.createdUserId
-            );
-            message.threadId = encodeGlobalID('Thread', message.threadId);
-            ctx.pubsub.publish(`message-thread-${message.threadId}`, message);
-            return message;
-          });
-      },
-    }),
-  }),
-});
+  }
+);
+
 export const schema = builder.toSchema({});
 
 export const sdl = printSchema(lexicographicSortSchema(schema));

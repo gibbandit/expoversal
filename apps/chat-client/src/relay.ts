@@ -6,6 +6,7 @@ import {
   RecordSource,
   Store,
 } from 'relay-runtime';
+import { authHeader } from './auth';
 
 async function FetchGraphQL(
   query: any,
@@ -15,7 +16,7 @@ async function FetchGraphQL(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      authorization: 'VXNlcjozYTMxYmExNS03NDM5LTRjNWUtYWEyOS1jNjc5ODY2MDQ2YjY=',
+      ...authHeader(),
     },
     body: JSON.stringify({
       query,

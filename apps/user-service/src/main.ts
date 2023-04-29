@@ -3,6 +3,7 @@ import { createYoga } from 'graphql-yoga';
 
 import { schema } from '@expoversal/graphql-user-service';
 import { parseAuthHeader } from '@expoversal/graphql-utils';
+import { userPrismaClient as prisma } from '@expoversal/prisma-clients';
 
 const port = process.env.PORT ? Number(process.env.PORT) : 3001;
 
@@ -11,7 +12,8 @@ const app = new koa();
 const yoga = createYoga<koa.ParameterizedContext>({
   schema,
   context: async ({ request }) => ({
-    currentUser: await parseAuthHeader(request.headers.get('authorization')),
+    User: await parseAuthHeader(request.headers.get('authorization')),
+    prisma,
   }),
   logging: 'debug',
 });

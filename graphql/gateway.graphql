@@ -2,16 +2,12 @@ type Query {
   node(id: ID!): Node
   nodes(ids: [ID!]!): [Node]!
   viewer: User
-  threads(
-    after: String
-    before: String
-    first: Int
-    last: Int
-  ): QueryThreadsConnection!
+  threads(after: String, before: String, first: Int, last: Int): QueryThreadsConnection!
 }
 
 type Mutation {
-  userCreate(input: userInput!): User!
+  userChangeAvatarSeed(input: UserChangeAvatarSeedInput!): UserChangeAvatarSeedPayload!
+  userChangeUsername(input: UserChangeUsernameInput!): UserChangeUsernamePayload!
   messageCreate(input: messageInput!): Message!
   threadCreate(input: threadInput!): Thread!
 }
@@ -32,8 +28,20 @@ type User implements Node {
   username: String
 }
 
-input userInput {
+input UserChangeAvatarSeedInput {
+  avatarSeed: String!
+}
+
+type UserChangeAvatarSeedPayload {
+  viewer: User!
+}
+
+input UserChangeUsernameInput {
   username: String!
+}
+
+type UserChangeUsernamePayload {
+  viewer: User!
 }
 
 type Message implements Node {
@@ -65,12 +73,7 @@ type Thread implements Node {
   createdAt: DateTime
   createdUser: User
   id: ID!
-  messages(
-    after: String
-    before: String
-    first: Int
-    last: Int
-  ): ThreadMessagesConnection
+  messages(after: String, before: String, first: Int, last: Int): ThreadMessagesConnection
   name: String
 }
 

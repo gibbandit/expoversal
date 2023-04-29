@@ -1,83 +1,104 @@
 import { ReactElement } from 'react';
-import { graphql } from 'react-relay';
-import { profileDropdownQuery$data } from './__generated__/profileDropdownQuery.graphql';
+import { graphql, readInlineData } from 'react-relay';
 import { Avatar, Dropdown } from 'flowbite-react';
 import { IoSettingsOutline, IoLogOutOutline } from 'react-icons/io5';
 import ProfileModal from './profileModal';
-import { graphQLSelector } from 'recoil-relay';
-import { recoilEnvironmentKey } from '../../relay';
-import { atom, useRecoilState, useRecoilValue } from 'recoil';
+import { atom, useRecoilState } from 'recoil';
+import { viewerAtom } from '../../atoms';
+import { removeAuthToken } from '../../auth';
+import SettingsModal from './settingsModal';
 
 export default function ProfileDropdown(): ReactElement {
-  const profileDropdownQuery = graphQLSelector({
-    key: 'profileDropdownQuery',
-    environment: recoilEnvironmentKey,
-    query: graphql`
-      query profileDropdownQuery {
-        viewer {
-          id
-          username
-          avatarUrl
-          ...profileModalFragment
-        }
-      }
-    `,
-    variables: {},
-    mapResponse: (data) => data,
-  });
+  const profileDropdownFragment = graphql`
+    fragment profileDropdownFragment on User @inline {
+      id
+      username
+      avatarUrl
+      ...profileModalFragment
+      ...settingsModalFragment
+    }
+  `;
 
-  const data: profileDropdownQuery$data = useRecoilValue(profileDropdownQuery);
+  const [viewer] = useRecoilState(viewerAtom);
 
-  const modalAtom = atom({
+  const data = readInlineData(profileDropdownFragment, viewer);
+
+  const profileModalAtom = atom({
     key: 'profileModal',
     default: false,
   });
 
-  const [showModal, setShowModal] = useRecoilState(modalAtom);
+  const settingsModalAtom = atom({
+    key: 'settingsModal',
+    default: false,
+  });
 
-  function onCloseModal() {
-    setShowModal(false);
+  const [showProfileModal, setShowProfileModal] =
+    useRecoilState(profileModalAtom);
+
+  const [showSettingsModal, setShowSettingsModal] =
+    useRecoilState(settingsModalAtom);
+
+  function onCloseProfileModal() {
+    setShowProfileModal(false);
+  }
+
+  function onCloseSettingsModal() {
+    setShowSettingsModal(false);
   }
 
   function onClickProfile() {
-    setShowModal(true);
+    setShowProfileModal(true);
+  }
+
+  function onClickSettings() {
+    setShowSettingsModal(true);
+  }
+
+  function onClickLogout() {
+    removeAuthToken();
   }
 
   return (
     <div className="flex relative">
+      <ProfileModal
+        userRef={data}
+        show={showProfileModal}
+        onClose={onCloseProfileModal}
+      />
+      <SettingsModal
+        userRef={data}
+        show={showSettingsModal}
+        onClose={onCloseSettingsModal}
+      />
       <Dropdown
         arrowIcon={false}
         inline={true}
-        label={<Avatar img={data.viewer?.avatarUrl} rounded={true} />}
+        label={<Avatar img={data?.avatarUrl} rounded={true} />}
       >
         <Dropdown.Header>
-          <ProfileModal
-            userRef={data?.viewer}
-            show={showModal}
-            onClose={onCloseModal}
-          />
           <Dropdown.Item onClick={onClickProfile}>
             <div className="flex flex-col items-center">
               <Avatar
                 alt="User avatar"
-                img={data.viewer?.avatarUrl}
+                img={data?.avatarUrl}
                 className="mb-2"
                 rounded={true}
               />
               <span className="block truncate text-sm font-medium self-center text-center">
-                {data.viewer?.username}
+                {data?.username}
               </span>
             </div>
           </Dropdown.Item>
         </Dropdown.Header>
-        <Dropdown.Item>
+        <Dropdown.Item onClick={onClickSettings}>
           <div className="flex items-center">
             <IoSettingsOutline className="mr-2 w-5 h-5" />
             <span>Settings</span>
           </div>
         </Dropdown.Item>
         <Dropdown.Divider />
-        <Dropdown.Item>
+        <Dropdown.Item onClick={onClickLogout}>
           <div className="flex items-center text-red-600">
             <IoLogOutOutline className="mr-2 w-5 h-5" />
             <span>Logout</span>

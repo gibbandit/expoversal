@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<ce4e31e613411661d8a74bbad0a1cf50>>
+ * @generated SignedSource<<577027f1d1c506fa143b2abc78d16b19>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -10,18 +10,18 @@
 
 import { ConcreteRequest, Query } from 'relay-runtime';
 import { FragmentRefs } from "relay-runtime";
-export type profileDropdownQuery$variables = {};
-export type profileDropdownQuery$data = {
+export type atomsViewerQuery$variables = {};
+export type atomsViewerQuery$data = {
   readonly viewer: {
     readonly avatarUrl: string;
     readonly id: string;
     readonly username: string | null;
-    readonly " $fragmentSpreads": FragmentRefs<"profileModalFragment">;
+    readonly " $fragmentSpreads": FragmentRefs<"profileDropdownFragment">;
   } | null;
 };
-export type profileDropdownQuery = {
-  response: profileDropdownQuery$data;
-  variables: profileDropdownQuery$variables;
+export type atomsViewerQuery = {
+  response: atomsViewerQuery$data;
+  variables: atomsViewerQuery$variables;
 };
 
 const node: ConcreteRequest = (function(){
@@ -56,7 +56,7 @@ return {
     "argumentDefinitions": [],
     "kind": "Fragment",
     "metadata": null,
-    "name": "profileDropdownQuery",
+    "name": "atomsViewerQuery",
     "selections": [
       {
         "alias": null,
@@ -71,8 +71,26 @@ return {
           (v2/*: any*/),
           {
             "kind": "InlineDataFragmentSpread",
-            "name": "profileModalFragment",
-            "selections": (v3/*: any*/),
+            "name": "profileDropdownFragment",
+            "selections": [
+              (v0/*: any*/),
+              (v1/*: any*/),
+              (v2/*: any*/),
+              {
+                "kind": "InlineDataFragmentSpread",
+                "name": "profileModalFragment",
+                "selections": (v3/*: any*/),
+                "args": null,
+                "argumentDefinitions": []
+              },
+              {
+                "kind": "InlineDataFragmentSpread",
+                "name": "settingsModalFragment",
+                "selections": (v3/*: any*/),
+                "args": null,
+                "argumentDefinitions": []
+              }
+            ],
             "args": null,
             "argumentDefinitions": []
           }
@@ -87,7 +105,7 @@ return {
   "operation": {
     "argumentDefinitions": [],
     "kind": "Operation",
-    "name": "profileDropdownQuery",
+    "name": "atomsViewerQuery",
     "selections": [
       {
         "alias": null,
@@ -102,16 +120,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "d982687d4b032f02330c2b65687f5b90",
+    "cacheID": "f9321107267eb1475db9f2872c4c9acc",
     "id": null,
     "metadata": {},
-    "name": "profileDropdownQuery",
+    "name": "atomsViewerQuery",
     "operationKind": "query",
-    "text": "query profileDropdownQuery {\n  viewer {\n    id\n    username\n    avatarUrl\n    ...profileModalFragment\n  }\n}\n\nfragment profileModalFragment on User {\n  id\n  username\n  avatarUrl\n}\n"
+    "text": "query atomsViewerQuery {\n  viewer {\n    id\n    username\n    avatarUrl\n    ...profileDropdownFragment\n  }\n}\n\nfragment profileDropdownFragment on User {\n  id\n  username\n  avatarUrl\n  ...profileModalFragment\n  ...settingsModalFragment\n}\n\nfragment profileModalFragment on User {\n  id\n  username\n  avatarUrl\n}\n\nfragment settingsModalFragment on User {\n  id\n  username\n  avatarUrl\n}\n"
   }
 };
 })();
 
-(node as any).hash = "5bf82dda36dde937553ed462a7a2bf75";
+(node as any).hash = "f7277571bd69d97235a77f1489db3219";
 
 export default node;

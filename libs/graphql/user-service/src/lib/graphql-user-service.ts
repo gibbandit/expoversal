@@ -1,27 +1,28 @@
 import SchemaBuilder from '@pothos/core';
-import { UserPrismaClient } from '@expoversal/prisma-clients/user-prisma-client';
-import PrismaPlugin from '@pothos/plugin-prisma';
+import PrismaPlugin, { PrismaClient } from '@pothos/plugin-prisma';
 import RelayPlugin from '@pothos/plugin-relay';
+import ScopeAuthPlugin from '@pothos/plugin-scope-auth';
 import { DateTimeResolver } from 'graphql-scalars';
+
+import { userPrismaClient as prisma } from '@expoversal/prisma-clients';
 
 import { lexicographicSortSchema, printSchema } from 'graphql';
 
 import type { UserPothosTypes } from '@expoversal/pothos-types';
 import { printSchemaToFile } from '@expoversal/graphql-utils';
-import { resolve } from 'path';
-
-const prisma = new UserPrismaClient({});
-
 const avatar_url = process.env.AVATAR_URL ?? 'http://localhost:3004/avatar';
 
 const builder = new SchemaBuilder<{
-  Context: { currentUser: { id: string } };
+  Context: { User: { id: string } };
   PrismaTypes: UserPothosTypes;
   Scalars: {
     DateTime: { Input: Date; Output: Date };
   };
+  AuthScopes: {
+    private: boolean;
+  };
 }>({
-  plugins: [PrismaPlugin, RelayPlugin],
+  plugins: [RelayPlugin, ScopeAuthPlugin, PrismaPlugin],
   prisma: {
     client: prisma,
     exposeDescriptions: true,
@@ -31,11 +32,17 @@ const builder = new SchemaBuilder<{
     clientMutationId: 'omit',
     cursorType: 'String',
   },
+  authScopes: async (context) => ({
+    private: !!context.User,
+  }),
+  scopeAuthOptions: {
+    authorizeOnSubscribe: true,
+  },
 });
 
 builder.addScalarType('DateTime', DateTimeResolver, {});
 
-builder.prismaNode('User', {
+const userNode = builder.prismaNode('User', {
   id: { field: 'id' },
   fields: (t) => ({
     createdAt: t.expose('createdAt', { type: 'DateTime', nullable: true }),
@@ -48,16 +55,46 @@ builder.prismaNode('User', {
   }),
 });
 
+const AuthResult = builder.objectRef<{ id: string }>('AuthResult');
+
+builder.objectType(AuthResult, {
+  fields: (t) => ({
+    id: t.exposeID('id'),
+  }),
+});
+
 builder.queryType({
   fields: (t) => ({
     viewer: t.prismaField({
+      authScopes: {
+        private: true,
+      },
       type: 'User',
       nullable: true,
       resolve: async (_query, _root, _args, ctx) => {
-        return prisma.user.findFirst({
+        return prisma.user.findUnique({
           where: {
-            id: ctx.currentUser.id,
+            id: ctx.User.id,
           },
+        });
+      },
+      unauthorizedResolver: () => null,
+    }),
+    _authUser: t.field({
+      type: AuthResult,
+      args: {
+        username: t.arg({ type: 'String', required: true }),
+      },
+      nullable: true,
+      resolve: async (_root, args, _ctx) => {
+        return prisma.user.upsert({
+          where: {
+            username: args.username,
+          },
+          create: {
+            username: args.username,
+          },
+          update: {},
         });
       },
     }),
@@ -67,29 +104,65 @@ builder.queryType({
   }),
 });
 
-const userInput = builder.inputType('userInput', {
-  fields: (t) => ({
-    username: t.string({ required: true }),
-  }),
-});
+builder.mutationType();
 
-builder.mutationType({
-  fields: (t) => ({
-    userCreate: t.prismaField({
-      type: 'User',
-      args: {
-        input: t.arg({ type: userInput, required: true }),
-      },
-      resolve: async (_query, _root, args, _ctx, _info) => {
-        return prisma.user.create({
-          data: {
-            username: args.input.username,
-          },
-        });
-      },
+builder.relayMutationField(
+  'userChangeAvatarSeed',
+  {
+    inputFields: (t) => ({
+      avatarSeed: t.string({ required: true }),
     }),
-  }),
-});
+  },
+  {
+    resolve: async (_root, args, ctx, _info) => {
+      return prisma.user.update({
+        where: {
+          id: ctx.User.id,
+        },
+        data: {
+          avatarSeed: args.input.avatarSeed,
+        },
+      });
+    },
+  },
+  {
+    outputFields: (t) => ({
+      viewer: t.field({
+        type: userNode,
+        resolve: (result) => result,
+      }),
+    }),
+  }
+);
+
+builder.relayMutationField(
+  'userChangeUsername',
+  {
+    inputFields: (t) => ({
+      username: t.string({ required: true }),
+    }),
+  },
+  {
+    resolve: async (_root, args, ctx, _info) => {
+      return prisma.user.update({
+        where: {
+          id: ctx.User.id,
+        },
+        data: {
+          username: args.input.username,
+        },
+      });
+    },
+  },
+  {
+    outputFields: (t) => ({
+      viewer: t.field({
+        type: userNode,
+        resolve: (result) => result,
+      }),
+    }),
+  }
+);
 
 export const schema = builder.toSchema({});
 
