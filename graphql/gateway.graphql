@@ -8,8 +8,8 @@ type Query {
 type Mutation {
   userChangeAvatarSeed(input: UserChangeAvatarSeedInput!): UserChangeAvatarSeedPayload!
   userChangeUsername(input: UserChangeUsernameInput!): UserChangeUsernamePayload!
-  messageCreate(input: messageInput!): Message!
-  threadCreate(input: threadInput!): Thread!
+  messageCreate(input: MessageCreateInput!): MessageCreatePayload!
+  threadCreate(input: ThreadCreateInput!): ThreadCreatePayload!
 }
 
 """
@@ -52,6 +52,20 @@ type Message implements Node {
   thread: Thread
 }
 
+type MessageConnectionEdge {
+  cursor: String!
+  node: Message!
+}
+
+input MessageCreateInput {
+  content: String!
+  threadId: ID!
+}
+
+type MessageCreatePayload {
+  messageEdge: MessageConnectionEdge!
+}
+
 type PageInfo {
   endCursor: String
   hasNextPage: Boolean!
@@ -60,13 +74,8 @@ type PageInfo {
 }
 
 type QueryThreadsConnection {
-  edges: [QueryThreadsConnectionEdge]!
+  edges: [ThreadConnectionEdge]!
   pageInfo: PageInfo!
-}
-
-type QueryThreadsConnectionEdge {
-  cursor: String!
-  node: Thread!
 }
 
 type Thread implements Node {
@@ -77,25 +86,24 @@ type Thread implements Node {
   name: String
 }
 
-type ThreadMessagesConnection {
-  edges: [ThreadMessagesConnectionEdge]!
-  pageInfo: PageInfo!
-}
-
-type ThreadMessagesConnectionEdge {
+type ThreadConnectionEdge {
   cursor: String!
-  node: Message!
+  node: Thread!
 }
 
-input messageInput {
-  content: String!
-  threadId: ID!
-}
-
-input threadInput {
+input ThreadCreateInput {
   name: String!
 }
 
+type ThreadCreatePayload {
+  threadEdge: ThreadConnectionEdge!
+}
+
+type ThreadMessagesConnection {
+  edges: [MessageConnectionEdge]!
+  pageInfo: PageInfo!
+}
+
 type Subscription {
-  threadMessageUpdates(threadId: ID!): Message!
+  threadMessageUpdates(threadId: ID!): MessageConnectionEdge!
 }

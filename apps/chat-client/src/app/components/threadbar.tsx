@@ -1,4 +1,4 @@
-import { ReactElement } from 'react';
+import { Children, ReactElement } from 'react';
 import { graphql, readInlineData } from 'react-relay';
 import { Button, Sidebar } from 'flowbite-react';
 import { IoAdd } from 'react-icons/io5';
@@ -6,28 +6,15 @@ import { threadbarFragment$key } from './__generated__/threadbarFragment.graphql
 import NewThreadModal from './newThreadModal';
 import { atom, useRecoilState } from 'recoil';
 
-type Props = {
-  threadsRef: threadbarFragment$key | null;
+type ThreadbarProps = {
+  connectionRef: any;
+  children?: ReactElement | ReactElement[];
 };
 
-export default function Threadbar({ threadsRef }: Props): ReactElement {
-  const threadbarFragment = graphql`
-    fragment threadbarFragment on Query @inline {
-      threads(first: 100) {
-        edges {
-          node {
-            ... on Thread {
-              id
-              name
-            }
-          }
-        }
-      }
-    }
-  `;
-
-  const data = readInlineData(threadbarFragment, threadsRef);
-
+export default function Threadbar({
+  connectionRef,
+  children,
+}: ThreadbarProps): ReactElement {
   const newThreadaModalAtom = atom({
     key: 'newThreadModal',
     default: false,
@@ -45,8 +32,9 @@ export default function Threadbar({ threadsRef }: Props): ReactElement {
   }
 
   return (
-    <div className="w-fit h-full scroll-smooth overflow-y-auto">
+    <div className="flex flex-col w-fit h-full scroll-smooth overflow-y-auto overscroll-y-contain">
       <NewThreadModal
+        connectionRef={connectionRef}
         show={showNewThreadModal}
         onClose={onCloseNewThreadModal}
       />
@@ -70,14 +58,37 @@ export default function Threadbar({ threadsRef }: Props): ReactElement {
                 </div>
               </Button>
             </div>
-            {data?.threads?.edges?.map((edge) => (
-              <Sidebar.Item key={edge?.node?.id}>
-                {edge?.node?.name}
-              </Sidebar.Item>
-            ))}
+            {children}
           </Sidebar.ItemGroup>
         </Sidebar.Items>
       </Sidebar>
     </div>
+  );
+}
+
+type ThreadbarItemProps = {
+  threadRef: any;
+  onClick?: () => void;
+  active?: boolean;
+};
+
+export function ThreadbarItem({
+  threadRef,
+  onClick,
+  active,
+}: ThreadbarItemProps): ReactElement {
+  const threadbarFragment = graphql`
+    fragment threadbarItemFragment on Thread @inline {
+      id
+      name
+    }
+  `;
+
+  const data = readInlineData(threadbarFragment, threadRef);
+
+  return (
+    <Sidebar.Item key={data.id} onClick={onClick} active={active}>
+      {data.name}
+    </Sidebar.Item>
   );
 }

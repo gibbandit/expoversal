@@ -4,7 +4,7 @@ export function MainPage() {
   history.replaceState(null, '', '/');
 
   return (
-    <div className="flex flex-grow">
+    <div className="h-full flex-grow">
       <ChatView />
     </div>
   );

@@ -24,7 +24,7 @@ export default function ProfileDropdown(): ReactElement {
   const data = readInlineData(profileDropdownFragment, viewer);
 
   const profileModalAtom = atom({
-    key: 'profileModal',
+    key: 'profileModal_dropdown',
     default: false,
   });
 
@@ -78,7 +78,7 @@ export default function ProfileDropdown(): ReactElement {
       >
         <Dropdown.Header>
           <Dropdown.Item onClick={onClickProfile}>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-grow flex-col items-center">
               <Avatar
                 alt="User avatar"
                 img={data?.avatarUrl}

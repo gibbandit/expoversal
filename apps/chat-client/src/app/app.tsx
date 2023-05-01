@@ -11,9 +11,13 @@ export function App() {
   const isAuth = useRecoilValue(authAtom);
 
   return (
-    <div className="h-screen flex flex-col">
-      {<Titlebar>{isAuth ? <ProfileDropdown /> : undefined}</Titlebar>}
-      <>{isAuth ? <MainPage /> : <AuthPage />}</>
+    <div className="h-screen flex flex-col overscroll-none">
+      <div>
+        {<Titlebar>{isAuth ? <ProfileDropdown /> : undefined}</Titlebar>}
+      </div>
+      <div className="flex justify-center items-center flex-grow overflow-hidden">
+        <>{isAuth ? <MainPage /> : <AuthPage />}</>
+      </div>
     </div>
   );
 }

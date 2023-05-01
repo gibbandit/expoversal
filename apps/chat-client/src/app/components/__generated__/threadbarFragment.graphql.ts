@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<3b36d75c5cb39e42a57507fe4955d678>>
+ * @generated SignedSource<<fb1d3c3a1d2cf71db0fd713b62cc52b7>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -16,6 +16,7 @@ export type threadbarFragment$data = {
       readonly node: {
         readonly id: string;
         readonly name: string | null;
+        readonly " $fragmentSpreads": FragmentRefs<"threadbarItemFragment">;
       };
     } | null>;
   };
@@ -31,6 +32,6 @@ const node: ReaderInlineDataFragment = {
   "name": "threadbarFragment"
 };
 
-(node as any).hash = "438eeca0976a0f38096151fd96c7c3b7";
+(node as any).hash = "d08acc7774c22924d0c5f0f4756175a9";
 
 export default node;

@@ -11,12 +11,17 @@ type Message {
   thread: Thread
 }
 
+type MessageConnectionEdge {
+  cursor: String!
+  node: Message!
+}
+
 type Query {
   _sdl: String!
 }
 
 type Subscription {
-  threadMessageUpdates(threadId: ID!): Message!
+  threadMessageUpdates(threadId: ID!): MessageConnectionEdge!
 }
 
 type Thread {

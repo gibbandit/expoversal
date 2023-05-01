@@ -11,13 +11,18 @@ type Message implements Node {
   thread: Thread
 }
 
+type MessageConnectionEdge {
+  cursor: String!
+  node: Message!
+}
+
 input MessageCreateInput {
   content: String!
   threadId: ID!
 }
 
 type MessageCreatePayload {
-  message: Message!
+  messageEdge: MessageConnectionEdge!
 }
 
 type Mutation {
@@ -44,13 +49,8 @@ type Query {
 }
 
 type QueryThreadsConnection {
-  edges: [QueryThreadsConnectionEdge]!
+  edges: [ThreadConnectionEdge]!
   pageInfo: PageInfo!
-}
-
-type QueryThreadsConnectionEdge {
-  cursor: String!
-  node: Thread!
 }
 
 type Thread implements Node {
@@ -61,22 +61,22 @@ type Thread implements Node {
   name: String
 }
 
+type ThreadConnectionEdge {
+  cursor: String!
+  node: Thread!
+}
+
 input ThreadCreateInput {
   name: String!
 }
 
 type ThreadCreatePayload {
-  thread: Thread!
+  threadEdge: ThreadConnectionEdge!
 }
 
 type ThreadMessagesConnection {
-  edges: [ThreadMessagesConnectionEdge]!
+  edges: [MessageConnectionEdge]!
   pageInfo: PageInfo!
-}
-
-type ThreadMessagesConnectionEdge {
-  cursor: String!
-  node: Message!
 }
 
 type User {

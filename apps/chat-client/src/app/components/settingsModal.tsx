@@ -89,7 +89,7 @@ export default function SettingsModal({
       className="sm:!h-full"
     >
       <Modal.Header>
-        <span className="text-2xl font-bold">Settings</span>
+        <span className="text-2xl font-bold">settings</span>
       </Modal.Header>
       <Modal.Body>
         <div className="flex flex-col items-center gap-8 my-4">

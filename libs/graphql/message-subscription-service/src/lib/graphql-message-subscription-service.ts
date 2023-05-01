@@ -29,8 +29,13 @@ export const schema = makeExecutableSchema({
       id: ID!
     }
 
+    type MessageConnectionEdge {
+      cursor: String!
+      node: Message!
+    }
+
     type Subscription {
-      threadMessageUpdates(threadId: ID!): Message!
+      threadMessageUpdates(threadId: ID!): MessageConnectionEdge!
     }
   `,
   resolvers: {
@@ -42,14 +47,17 @@ export const schema = makeExecutableSchema({
       threadMessageUpdates: {
         resolve: (payload) => {
           return {
-            id: payload.id,
-            createdAt: payload.createdAt,
-            content: payload.content,
-            createdUser: {
-              id: payload.createdUserId,
-            },
-            thread: {
-              id: payload.threadId,
+            cursor: payload.id,
+            node: {
+              id: payload.id,
+              createdAt: payload.createdAt,
+              content: payload.content,
+              createdUser: {
+                id: payload.createdUserId,
+              },
+              thread: {
+                id: payload.threadId,
+              },
             },
           };
         },
